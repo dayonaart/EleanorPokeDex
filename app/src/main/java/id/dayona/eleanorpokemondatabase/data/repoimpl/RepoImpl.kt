@@ -35,10 +35,10 @@ class RepoImpl @Inject constructor(
                 if (res.isSuccessful) {
                     emit(ApiSuccess(data = res.body()!!))
                 } else {
-                    emit(ApiError(code = res.code(), message = res.message()))
+                    emit(ApiError(code = res.code(), message = res.errorBody()?.string()))
                 }
             } catch (e: HttpException) {
-                emit(ApiError(code = e.code(), message = e.message))
+                emit(ApiException(e = "${e.message}"))
             } catch (e: SSLPeerUnverifiedException) {
                 emit(ApiException(e = "Unverified SSL\n${e.message}"))
             } catch (e: TimeoutException) {
@@ -58,10 +58,10 @@ class RepoImpl @Inject constructor(
                 if (res.isSuccessful) {
                     emit(ApiSuccess(data = res.body()!!))
                 } else {
-                    emit(ApiError(code = res.code(), message = res.message()))
+                    emit(ApiError(code = res.code(), message = res.raw().message))
                 }
             } catch (e: HttpException) {
-                emit(ApiError(code = e.code(), message = e.message))
+                emit(ApiException(e = "${e.message}"))
             } catch (e: SSLPeerUnverifiedException) {
                 emit(ApiException(e = "Unverified SSL\n${e.message}"))
             } catch (e: Exception) {

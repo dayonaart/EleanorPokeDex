@@ -13,22 +13,24 @@ import id.dayona.eleanorpokemondatabase.data.ApiException
 import id.dayona.eleanorpokemondatabase.data.ApiLoading
 import id.dayona.eleanorpokemondatabase.data.ApiSuccess
 import id.dayona.eleanorpokemondatabase.data.TAG
+import id.dayona.eleanorpokemondatabase.data.model.ErrorDialogModel
 import id.dayona.eleanorpokemondatabase.data.model.PokeListModel
 import id.dayona.eleanorpokemondatabase.data.model.PokemonIdModel
 import id.dayona.eleanorpokemondatabase.data.repository.Repository
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewModel() {
     private val instance = repository.get()
     val pokelist = MutableStateFlow(PokeListModel())
     val pokeIdList = MutableStateFlow(listOf(PokemonIdModel()))
+    val loading = MutableStateFlow(false)
+    val errorDialog = MutableStateFlow(ErrorDialogModel())
 
     init {
         initPokeList()
@@ -55,57 +57,78 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
 
     private fun initPokeList() {
         viewModelScope.launch {
-            instance.pokeList(20, 30).collectLatest { res ->
+            instance.pokeList(10, 30).collectLatest { res ->
                 when (res) {
                     is ApiSuccess -> {
-                        delay(1.seconds)
                         repeat(res.data.results?.size ?: 0) { i ->
                             val url =
                                 res.data.results!![i]?.url!!.replace(
                                     "https://pokeapi.co/api/v2/",
                                     ""
                                 )
-                            getPokeId(url = url)
+                            getPokeId(url = url) {
+                                if (!it) this.cancel()
+                            }
                         }
+                        loading.emit(false)
                     }
 
                     is ApiError -> {
                         Log.d(TAG, "ApiError message : ${res.message} code : ${res.code}")
+                        loading.emit(false)
+                        errorDialog.update {
+                            it.copy(showError = true, errorText = "${res.code}\n${res.message}")
+                        }
                     }
+
 
                     is ApiException -> {
                         Log.d(TAG, "ApiException message ${res.e}")
+                        loading.emit(false)
+                        errorDialog.update {
+                            it.copy(showError = true, errorText = res.e)
+                        }
                     }
 
                     is ApiLoading -> {
                         Log.d(TAG, "Loading")
+                        loading.emit(true)
                     }
                 }
             }
         }
     }
 
-    private fun getPokeId(url: String) {
-        viewModelScope.launch {
-            instance.pokemonByUrl(url).collectLatest { res ->
-                when (res) {
-                    is ApiSuccess -> {
-                        pokeIdList.update {
-                            (it + res.data).filter { f -> f.name != null }
-                        }
+    private suspend fun getPokeId(url: String, onSuccess: (Boolean) -> Unit) {
+        instance.pokemonByUrl(url).collectLatest { res ->
+            when (res) {
+                is ApiSuccess -> {
+                    pokeIdList.update {
+                        (it + res.data).filter { f -> f.name != null }
                     }
+                    onSuccess(true)
+                }
 
-                    is ApiError -> {
-                        Log.d(TAG, "${res.message}")
+                is ApiError -> {
+                    Log.d(TAG, "${res.message}")
+                    loading.emit(false)
+                    errorDialog.update {
+                        it.copy(showError = true, errorText = "${res.code}\n${res.message}")
                     }
+                    onSuccess(false)
+                }
 
-                    is ApiException -> {
-                        Log.d(TAG, res.e)
+                is ApiException -> {
+                    Log.d(TAG, res.e)
+                    loading.emit(false)
+                    errorDialog.update {
+                        it.copy(showError = true, errorText = res.e)
                     }
+                    onSuccess(false)
+                }
 
-                    is ApiLoading -> {
-                        Log.d(TAG, "Loading")
-                    }
+                is ApiLoading -> {
+                    Log.d(TAG, "Loading")
                 }
             }
         }

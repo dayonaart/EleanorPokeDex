@@ -1,11 +1,15 @@
 package id.dayona.eleanorpokemondatabase.ui
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -18,6 +22,7 @@ import id.dayona.eleanorpokemondatabase.ui.routes.HomeScreen
 import id.dayona.eleanorpokemondatabase.ui.routes.ProfileScreen
 import id.dayona.eleanorpokemondatabase.ui.routes.SearchScreen
 import id.dayona.eleanorpokemondatabase.viewmodel.PokemonViewModel
+import kotlinx.coroutines.flow.collectLatest
 
 sealed class ScreenRoute(val route: String) {
     object HomeScreen : ScreenRoute("home-screen")
@@ -27,15 +32,6 @@ sealed class ScreenRoute(val route: String) {
     object DetailPokemon : ScreenRoute("detail-pokemon-screen")
     object ErrorDialog : ScreenRoute("error-dialog")
     object LoadingDialog : ScreenRoute("loading-dialog")
-
-    fun withArgsFormat(vararg args: String): String {
-        return buildString {
-            append(route)
-            args.forEach { arg ->
-                append("/$arg")
-            }
-        }
-    }
 }
 
 class Screen : BottomNav, HomeScreen, SearchScreen, FeedScreen, ProfileScreen {
@@ -44,10 +40,11 @@ class Screen : BottomNav, HomeScreen, SearchScreen, FeedScreen, ProfileScreen {
 
     @Composable
     fun Navigation(paddingValues: PaddingValues) {
+        val errorDialog by pokemonViewModel.errorDialog.collectAsState()
         NavHost(
             navController = navController,
             startDestination = ScreenRoute.HomeScreen.route,
-            modifier = androidx.compose.ui.Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues)
         ) {
             composable(ScreenRoute.HomeScreen.route) {
                 Home()
@@ -68,28 +65,55 @@ class Screen : BottomNav, HomeScreen, SearchScreen, FeedScreen, ProfileScreen {
                 val args = it.arguments?.getInt("index")
                 DetailPokemon(args!!)
             }
-            dialog(ScreenRoute.LoadingDialog.route) {
+            dialog(
+                ScreenRoute.LoadingDialog.route,
+                dialogProperties = DialogProperties(
+                    dismissOnBackPress = false,
+                    dismissOnClickOutside = false
+                )
+            ) {
                 Dialog(onDismissRequest = {
                     navController.popBackStack()
                 }, content = {
                     RippleLoading()
                 })
             }
-            dialog(ScreenRoute.ErrorDialog.route) {
+            dialog(
+                ScreenRoute.ErrorDialog.route,
+                dialogProperties = DialogProperties(
+                    dismissOnBackPress = false,
+                    dismissOnClickOutside = false
+                )
+            ) {
                 ErrorDialog(
                     onDismissRequest = {
                         navController.popBackStack()
                     },
-                    dialogTitle = "errorDialogModel.dialogTitle",
-                    dialogText = "errorDialogModel.dialogText"
+                    dialogTitle = "Terjadi Kesalahan",
+                    dialogText = errorDialog.errorText
                 )
             }
         }
     }
 
-    @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @Composable
     fun MainScreen() {
+        LaunchedEffect(key1 = pokemonViewModel.loading) {
+            pokemonViewModel.loading.collectLatest {
+                if (it) {
+                    navController.navigate(ScreenRoute.LoadingDialog.route)
+                } else {
+                    navController.popBackStack(ScreenRoute.LoadingDialog.route, inclusive = true)
+                }
+            }
+        }
+        LaunchedEffect(key1 = pokemonViewModel.errorDialog) {
+            pokemonViewModel.errorDialog.collectLatest {
+                if (it.showError) {
+                    navController.navigate(ScreenRoute.ErrorDialog.route)
+                }
+            }
+        }
         Scaffold(
             content = { Navigation(it) },
             bottomBar = { BottomNavigator() },

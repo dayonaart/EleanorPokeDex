@@ -46,12 +46,13 @@ interface HomeScreen : Loading, DetailPokemonScreen {
                                     navController.navigate(ScreenRoute.DetailPokemon.route + "/$i")
                                 }
                         ) {
-                            Text(text = "${pokeIdList[i].name}")
                             AsyncImage(
                                 model = pokeIdList[i].sprites?.other?.officialArtwork?.frontDefault,
                                 modifier = Modifier.size(100.dp),
                                 contentDescription = "Pokemon"
                             )
+                            Text(text = "${pokeIdList[i].name}")
+
                         }
                     }
                 }

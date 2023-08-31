@@ -70,6 +70,27 @@ class RepoImpl @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
+    override suspend fun searchPokemon(name: String): Flow<ApiResult<PokemonIdModel>> {
+        return flow {
+            emit(ApiLoading(message = "Loading"))
+            try {
+                val res = api.searchPokemon(name = name)
+                Log.d(TAG, "${res.raw().request.url}")
+                if (res.isSuccessful) {
+                    emit(ApiSuccess(data = res.body()!!))
+                } else {
+                    emit(ApiError(code = res.code(), message = res.raw().message))
+                }
+            } catch (e: HttpException) {
+                emit(ApiException(e = "${e.message}"))
+            } catch (e: SSLPeerUnverifiedException) {
+                emit(ApiException(e = "Unverified SSL\n${e.message}"))
+            } catch (e: Exception) {
+                emit(ApiException(e = "${e.message}"))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
     override fun getContext(): Context {
         return appContext.applicationContext
     }

@@ -17,4 +17,9 @@ interface Api {
     suspend fun pokomenByUrl(
         @Path("url") url: String
     ): Response<PokemonIdModel>
+
+    @GET("pokemon/{name}")
+    suspend fun searchPokemon(
+        @Path("name") name: String
+    ): Response<PokemonIdModel>
 }

@@ -9,5 +9,6 @@ import kotlinx.coroutines.flow.Flow
 interface Repository {
     suspend fun pokeList(limit: Int, offset: Int): Flow<ApiResult<PokeListModel>>
     suspend fun pokemonByUrl(url: String): Flow<ApiResult<PokemonIdModel>>
+    suspend fun searchPokemon(name: String): Flow<ApiResult<PokemonIdModel>>
     fun getContext(): Context
 }

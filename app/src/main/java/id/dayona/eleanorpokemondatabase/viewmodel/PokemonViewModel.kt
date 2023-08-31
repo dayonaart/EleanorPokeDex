@@ -29,8 +29,10 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
     private val instance = repository.get()
     val pokelist = MutableStateFlow(PokeListModel())
     val pokeIdList = MutableStateFlow(listOf(PokemonIdModel()))
+    val pokeId = MutableStateFlow(PokemonIdModel())
     val loading = MutableStateFlow(false)
     val errorDialog = MutableStateFlow(ErrorDialogModel())
+    val appContext = instance.getContext()
 
     init {
         initPokeList()
@@ -57,7 +59,7 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
 
     private fun initPokeList() {
         viewModelScope.launch {
-            instance.pokeList(10, 30).collectLatest { res ->
+            instance.pokeList(50, 30).collectLatest { res ->
                 when (res) {
                     is ApiSuccess -> {
                         repeat(res.data.results?.size ?: 0) { i ->
@@ -70,6 +72,42 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
                                 if (!it) this.cancel()
                             }
                         }
+                        loading.emit(false)
+                    }
+
+                    is ApiError -> {
+                        Log.d(TAG, "ApiError message : ${res.message} code : ${res.code}")
+                        loading.emit(false)
+                        errorDialog.update {
+                            it.copy(showError = true, errorText = "${res.code}\n${res.message}")
+                        }
+                    }
+
+
+                    is ApiException -> {
+                        Log.d(TAG, "ApiException message ${res.e}")
+                        loading.emit(false)
+                        errorDialog.update {
+                            it.copy(showError = true, errorText = res.e)
+                        }
+                    }
+
+                    is ApiLoading -> {
+                        Log.d(TAG, "Loading")
+                        loading.emit(true)
+                    }
+                }
+            }
+        }
+    }
+
+
+    fun searchPokemon(name: String) {
+        viewModelScope.launch {
+            instance.searchPokemon(name = name).collectLatest { res ->
+                when (res) {
+                    is ApiSuccess -> {
+                        pokeId.emit(res.data)
                         loading.emit(false)
                     }
 

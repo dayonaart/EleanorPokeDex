@@ -16,4 +16,5 @@ interface Core {
     }
 }
 
-val TAG = EleanorPokemonApp::class.java.simpleName
+val NORMAL_TAG = EleanorPokemonApp::class.java.simpleName
+val API_TAG = "API::TAG"

@@ -22,7 +22,7 @@ import coil.compose.AsyncImage
 import id.dayona.eleanorpokemondatabase.ui.ScreenRoute
 import id.dayona.eleanorpokemondatabase.viewmodel.PokemonViewModel
 
-interface HomeScreen : Loading, DetailPokemonScreen {
+interface HomeScreen : LoadingDialog, DetailPokemonScreen {
     val navController: NavHostController
     override val pokemonViewModel: PokemonViewModel
 

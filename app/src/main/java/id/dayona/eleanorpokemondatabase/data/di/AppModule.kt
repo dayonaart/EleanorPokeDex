@@ -1,16 +1,19 @@
 package id.dayona.eleanorpokemondatabase.data.di
 
 import android.app.Application
+import android.os.Build
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import id.dayona.eleanorpokemondatabase.data.remote.Api
+import id.dayona.eleanorpokemondatabase.data.repoimpl.DeviceRepoImpl
 import id.dayona.eleanorpokemondatabase.data.repoimpl.RepoImpl
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 
@@ -38,7 +41,22 @@ object AppModule {
     fun provideRepository(
         api: Api,
         app: Application,
+        @Named("deviceName") deviceName: String?,
     ): RepoImpl {
-        return RepoImpl(api, app)
+        return RepoImpl(api, app, deviceName)
+    }
+
+    @Provides
+    @Singleton
+    @Named("deviceName")
+    fun deviceName(
+    ): String? {
+        return Build.MANUFACTURER
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeviceRepository(app: Application): DeviceRepoImpl {
+        return DeviceRepoImpl(app)
     }
 }

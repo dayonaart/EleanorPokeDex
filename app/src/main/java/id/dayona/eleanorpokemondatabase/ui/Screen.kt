@@ -8,8 +8,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -72,24 +73,18 @@ class Screen : BottomNav, HomeScreen, SearchScreen, FeedScreen, ProfileScreen {
                     dismissOnClickOutside = false
                 )
             ) {
-                Dialog(onDismissRequest = {
-                    navController.popBackStack()
-                }, content = {
-                    RippleLoading()
-                })
+                (LocalView.current.parent as DialogWindowProvider).window.setDimAmount(0f)
+                RippleLoading()
             }
             dialog(
                 ScreenRoute.ErrorDialog.route,
                 dialogProperties = DialogProperties(
-                    dismissOnBackPress = false,
-                    dismissOnClickOutside = false
+                    dismissOnBackPress = true,
+                    dismissOnClickOutside = true
                 )
             ) {
+                (LocalView.current.parent as DialogWindowProvider).window.setDimAmount(0f)
                 ErrorDialog(
-                    onDismissRequest = {
-                        navController.popBackStack()
-                    },
-                    dialogTitle = "Terjadi Kesalahan",
                     dialogText = errorDialog.errorText
                 )
             }

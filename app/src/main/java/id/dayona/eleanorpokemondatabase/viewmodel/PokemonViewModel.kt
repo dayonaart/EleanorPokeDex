@@ -1,9 +1,7 @@
 package id.dayona.eleanorpokemondatabase.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.produceState
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.Lazy
@@ -12,10 +10,11 @@ import id.dayona.eleanorpokemondatabase.data.ApiError
 import id.dayona.eleanorpokemondatabase.data.ApiException
 import id.dayona.eleanorpokemondatabase.data.ApiLoading
 import id.dayona.eleanorpokemondatabase.data.ApiSuccess
-import id.dayona.eleanorpokemondatabase.data.TAG
+import id.dayona.eleanorpokemondatabase.data.NORMAL_TAG
 import id.dayona.eleanorpokemondatabase.data.model.ErrorDialogModel
 import id.dayona.eleanorpokemondatabase.data.model.PokeListModel
 import id.dayona.eleanorpokemondatabase.data.model.PokemonIdModel
+import id.dayona.eleanorpokemondatabase.data.repository.DeviceRepository
 import id.dayona.eleanorpokemondatabase.data.repository.Repository
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,36 +24,25 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewModel() {
+class PokemonViewModel @Inject constructor(
+    repository: Lazy<Repository>,
+    deviceRepository: Lazy<DeviceRepository>
+) : ViewModel() {
     private val instance = repository.get()
+    private val deviceRepositoryInstance = deviceRepository.get()
     val pokelist = MutableStateFlow(PokeListModel())
     val pokeIdList = MutableStateFlow(listOf(PokemonIdModel()))
     val pokeId = MutableStateFlow(PokemonIdModel())
     val loading = MutableStateFlow(false)
     val errorDialog = MutableStateFlow(ErrorDialogModel())
-    val appContext = instance.getContext()
 
     init {
+        Toast.makeText(
+            instance.getContext(),
+            deviceRepositoryInstance.getAllProperties(),
+            Toast.LENGTH_SHORT
+        ).show()
         initPokeList()
-    }
-
-    @Composable
-    fun getPokeList(): State<PokeListModel?> {
-        return produceState<PokeListModel?>(initialValue = null) {
-            instance.pokeList(100, 10).collectLatest { res ->
-                when (res) {
-                    is ApiSuccess -> {
-                        value = res.data
-                    }
-
-                    is ApiError -> {}
-                    is ApiException -> {}
-                    is ApiLoading -> {
-                        Log.d(TAG, "Loading")
-                    }
-                }
-            }
-        }
     }
 
     private fun initPokeList() {
@@ -72,12 +60,9 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
                                 if (!it) this.cancel()
                             }
                         }
-                        loading.emit(false)
                     }
 
                     is ApiError -> {
-                        Log.d(TAG, "ApiError message : ${res.message} code : ${res.code}")
-                        loading.emit(false)
                         errorDialog.update {
                             it.copy(showError = true, errorText = "${res.code}\n${res.message}")
                         }
@@ -85,16 +70,12 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
 
 
                     is ApiException -> {
-                        Log.d(TAG, "ApiException message ${res.e}")
-                        loading.emit(false)
                         errorDialog.update {
                             it.copy(showError = true, errorText = res.e)
                         }
                     }
 
                     is ApiLoading -> {
-                        Log.d(TAG, "Loading")
-                        loading.emit(true)
                     }
                 }
             }
@@ -112,7 +93,6 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
                     }
 
                     is ApiError -> {
-                        Log.d(TAG, "ApiError message : ${res.message} code : ${res.code}")
                         loading.emit(false)
                         errorDialog.update {
                             it.copy(showError = true, errorText = "${res.code}\n${res.message}")
@@ -121,7 +101,6 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
 
 
                     is ApiException -> {
-                        Log.d(TAG, "ApiException message ${res.e}")
                         loading.emit(false)
                         errorDialog.update {
                             it.copy(showError = true, errorText = res.e)
@@ -129,7 +108,6 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
                     }
 
                     is ApiLoading -> {
-                        Log.d(TAG, "Loading")
                         loading.emit(true)
                     }
                 }
@@ -148,7 +126,7 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
                 }
 
                 is ApiError -> {
-                    Log.d(TAG, "${res.message}")
+                    Log.d(NORMAL_TAG, "${res.message}")
                     loading.emit(false)
                     errorDialog.update {
                         it.copy(showError = true, errorText = "${res.code}\n${res.message}")
@@ -157,7 +135,7 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
                 }
 
                 is ApiException -> {
-                    Log.d(TAG, res.e)
+                    Log.d(NORMAL_TAG, res.e)
                     loading.emit(false)
                     errorDialog.update {
                         it.copy(showError = true, errorText = res.e)
@@ -166,7 +144,6 @@ class PokemonViewModel @Inject constructor(repository: Lazy<Repository>) : ViewM
                 }
 
                 is ApiLoading -> {
-                    Log.d(TAG, "Loading")
                 }
             }
         }

@@ -10,6 +10,8 @@ import id.dayona.eleanorpokemondatabase.data.remote.Api
 import id.dayona.eleanorpokemondatabase.data.repoimpl.DeviceRepoImpl
 import id.dayona.eleanorpokemondatabase.data.repoimpl.LocationRepoImpl
 import id.dayona.eleanorpokemondatabase.data.repoimpl.RepoImpl
+import id.dayona.eleanorpokemondatabase.data.repository.DeviceRepository
+import id.dayona.eleanorpokemondatabase.data.repository.LocationRepository
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -42,25 +44,21 @@ object AppModule {
     fun provideRepository(
         api: Api,
         app: Application,
-        @Named("provideLocationRepository") locationRepoImpl: LocationRepoImpl,
-        @Named("provideDeviceRepository") deviceRepoImpl: DeviceRepoImpl,
+        deviceRepository: DeviceRepository,
+        locationRepository: LocationRepository
     ): RepoImpl {
-        return RepoImpl(api, app, locationRepoImpl, deviceRepoImpl)
+        return RepoImpl(api, app, deviceRepository, locationRepository)
     }
 
     @Provides
     @Singleton
-    @Named("provideLocationRepository")
-    fun provideLocationRepository(
-        app: Application,
-    ): LocationRepoImpl {
+    fun provideLocationRepository(app: Application): LocationRepoImpl {
         return LocationRepoImpl(app)
     }
 
 
     @Provides
     @Singleton
-    @Named("provideDeviceRepository")
     fun provideDeviceRepository(app: Application): DeviceRepoImpl {
         return DeviceRepoImpl(app)
     }

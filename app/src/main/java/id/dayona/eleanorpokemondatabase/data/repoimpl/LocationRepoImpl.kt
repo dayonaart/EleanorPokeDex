@@ -10,7 +10,6 @@ import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import id.dayona.eleanorpokemondatabase.data.hasPermission
 import id.dayona.eleanorpokemondatabase.data.repository.LocationRepository
@@ -29,7 +28,6 @@ class LocationRepoImpl @Inject constructor(
         interval: Long,
         client: FusedLocationProviderClient
     ): Flow<Location> {
-        val client = LocationServices.getFusedLocationProviderClient(context)
         return callbackFlow {
             if (!context.hasPermission(context)) {
                 throw LocationRepository.LocationException("Missing Permission")
@@ -68,5 +66,9 @@ class LocationRepoImpl @Inject constructor(
             )
             awaitClose { client.removeLocationUpdates(locationCallback) }
         }
+    }
+
+    override fun getContext(): Context {
+        return context
     }
 }

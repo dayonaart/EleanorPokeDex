@@ -14,6 +14,8 @@ import id.dayona.eleanorpokemondatabase.data.NORMAL_TAG
 import id.dayona.eleanorpokemondatabase.data.model.PokeListModel
 import id.dayona.eleanorpokemondatabase.data.model.PokemonIdModel
 import id.dayona.eleanorpokemondatabase.data.remote.Api
+import id.dayona.eleanorpokemondatabase.data.repository.DeviceRepository
+import id.dayona.eleanorpokemondatabase.data.repository.LocationRepository
 import id.dayona.eleanorpokemondatabase.data.repository.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -27,12 +29,12 @@ import javax.net.ssl.SSLPeerUnverifiedException
 class RepoImpl @Inject constructor(
     private val api: Api,
     private val appContext: Application,
-    private val locationRepoImpl: LocationRepoImpl,
-    deviceRepoImpl: DeviceRepoImpl,
+    deviceRepository: DeviceRepository,
+    private val locationRepository: LocationRepository
 ) : Repository {
     init {
         val appName = appContext.getString(R.string.app_name)
-        Log.d(NORMAL_TAG, "HELLO ${deviceRepoImpl.getAllProperties()}")
+        Log.d(NORMAL_TAG, "HELLO ${deviceRepository.getAllProperties()}")
     }
 
     override suspend fun pokeList(limit: Int, offset: Int): Flow<ApiResult<PokeListModel>> {
@@ -102,10 +104,6 @@ class RepoImpl @Inject constructor(
 
     override fun getContext(): Context {
         return appContext.applicationContext
-    }
-
-    override fun getLocation(): LocationRepoImpl {
-        return locationRepoImpl
     }
 
 }

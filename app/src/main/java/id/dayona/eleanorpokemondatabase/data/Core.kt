@@ -27,7 +27,7 @@ val PERMISSIONS_REQUIRED = arrayOf(
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) Manifest.permission.FOREGROUND_SERVICE else ""
 )
 
-fun Context.hasPermission(context: Context): Boolean {
+fun hasPermission(context: Context): Boolean {
     val check = PERMISSIONS_REQUIRED.map {
         ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }

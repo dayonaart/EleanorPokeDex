@@ -2,17 +2,18 @@ package id.dayona.eleanorpokemondatabase.data
 
 import android.annotation.SuppressLint
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.location.Geocoder
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
+import id.dayona.eleanorpokemondatabase.MainActivity
 import id.dayona.eleanorpokemondatabase.R
 import id.dayona.eleanorpokemondatabase.data.repository.LocationRepository
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +31,7 @@ class EleanorService : Service() {
 
     @Inject
     lateinit var locationRepository: Lazy<LocationRepository>
-    lateinit var client: FusedLocationProviderClient
+    private lateinit var client: FusedLocationProviderClient
     private lateinit var notif: NotificationCompat.Builder
     private lateinit var updateNotif: NotificationCompat.Builder
     private lateinit var notifManager: NotificationManager
@@ -65,10 +66,18 @@ class EleanorService : Service() {
 
     @SuppressLint("MissingPermission")
     private fun start() {
-        notif = NotificationCompat.Builder(locationRepository.get().getContext(), "Location")
+        val notifyIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val notifyPendingIntent = PendingIntent.getActivity(
+            this, 0, notifyIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        notif = NotificationCompat.Builder(this, "Location")
             .setContentTitle("Location")
             .setContentText("Please wait....")
-            .setSmallIcon(R.drawable.ic_launcher_background).setOngoing(true)
+            .setSmallIcon(R.drawable.ic_launcher_background).setContentIntent(notifyPendingIntent)
+            .setOngoing(true)
         notifManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         serviceScope.launch {
@@ -82,8 +91,9 @@ class EleanorService : Service() {
                     )?.last()?.getAddressLine(0)
                 val fixAddr =
                     addr?.split(",")?.subList(1, addr.split(",").size)?.joinToString(",")?.trim()
-                Log.d(NORMAL_TAG, "$fixAddr")
                 updateNotif = notif.setContentText("$fixAddr")
+                    .setContentTitle("${fixAddr?.split(",")?.first()}")
+                    .setStyle(NotificationCompat.BigTextStyle().bigText("$fixAddr"))
                 notifManager.notify(1, updateNotif.build())
             }
         }

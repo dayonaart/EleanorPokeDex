@@ -40,7 +40,7 @@ class PokemonViewModel @Inject constructor(
 //            deviceRepositoryInstance.getAllProperties(),
 //            Toast.LENGTH_SHORT
 //        ).show()
-//        initPokeList()
+        initPokeList()
     }
 
     private fun initPokeList() {

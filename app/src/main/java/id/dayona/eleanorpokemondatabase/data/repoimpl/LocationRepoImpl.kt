@@ -29,7 +29,7 @@ class LocationRepoImpl @Inject constructor(
         client: FusedLocationProviderClient
     ): Flow<Location> {
         return callbackFlow {
-            if (!context.hasPermission(context)) {
+            if (!hasPermission(context)) {
                 throw LocationRepository.LocationException("Missing Permission")
 
             }

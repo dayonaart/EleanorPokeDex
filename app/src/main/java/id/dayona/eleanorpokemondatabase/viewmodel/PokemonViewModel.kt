@@ -10,7 +10,7 @@ import id.dayona.eleanorpokemondatabase.data.ApiError
 import id.dayona.eleanorpokemondatabase.data.ApiException
 import id.dayona.eleanorpokemondatabase.data.ApiLoading
 import id.dayona.eleanorpokemondatabase.data.ApiSuccess
-import id.dayona.eleanorpokemondatabase.data.EleanorService
+import id.dayona.eleanorpokemondatabase.data.service.EleanorService
 import id.dayona.eleanorpokemondatabase.data.NORMAL_TAG
 import id.dayona.eleanorpokemondatabase.data.model.ErrorDialogModel
 import id.dayona.eleanorpokemondatabase.data.model.PokeListModel

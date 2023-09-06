@@ -1,4 +1,4 @@
-package id.dayona.eleanorpokemondatabase.data
+package id.dayona.eleanorpokemondatabase.data.service
 
 import android.app.NotificationManager
 import android.app.Service
@@ -9,7 +9,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
-import id.dayona.eleanorpokemondatabase.ServiceUtils
+import id.dayona.eleanorpokemondatabase.data.ACTION_START
+import id.dayona.eleanorpokemondatabase.data.ACTION_STOP
 import id.dayona.eleanorpokemondatabase.data.repository.LocationRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,7 @@ import kotlinx.coroutines.cancel
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class EleanorService : Service(), ServiceUtils {
+class EleanorService : Service(), EleanorServiceUtils {
     override val eleanorService = this
     override val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 

@@ -1,4 +1,4 @@
-package id.dayona.eleanorpokemondatabase
+package id.dayona.eleanorpokemondatabase.data.service
 
 import android.annotation.SuppressLint
 import android.app.NotificationManager
@@ -10,14 +10,15 @@ import android.location.Geocoder
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import dagger.Lazy
-import id.dayona.eleanorpokemondatabase.data.EleanorService
+import id.dayona.eleanorpokemondatabase.MainActivity
+import id.dayona.eleanorpokemondatabase.R
 import id.dayona.eleanorpokemondatabase.data.repository.LocationRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-interface ServiceUtils {
+interface EleanorServiceUtils {
     val eleanorService: EleanorService
     val locationRepository: Lazy<LocationRepository>
     val serviceScope: CoroutineScope

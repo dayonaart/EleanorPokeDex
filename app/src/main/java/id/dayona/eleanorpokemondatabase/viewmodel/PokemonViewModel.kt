@@ -1,7 +1,7 @@
 package id.dayona.eleanorpokemondatabase.viewmodel
 
+import android.content.Intent
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.Lazy
@@ -10,11 +10,11 @@ import id.dayona.eleanorpokemondatabase.data.ApiError
 import id.dayona.eleanorpokemondatabase.data.ApiException
 import id.dayona.eleanorpokemondatabase.data.ApiLoading
 import id.dayona.eleanorpokemondatabase.data.ApiSuccess
+import id.dayona.eleanorpokemondatabase.data.EleanorService
 import id.dayona.eleanorpokemondatabase.data.NORMAL_TAG
 import id.dayona.eleanorpokemondatabase.data.model.ErrorDialogModel
 import id.dayona.eleanorpokemondatabase.data.model.PokeListModel
 import id.dayona.eleanorpokemondatabase.data.model.PokemonIdModel
-import id.dayona.eleanorpokemondatabase.data.repository.DeviceRepository
 import id.dayona.eleanorpokemondatabase.data.repository.Repository
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,11 +25,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PokemonViewModel @Inject constructor(
-    repository: Lazy<Repository>,
-    deviceRepository: Lazy<DeviceRepository>
+    repository: Lazy<Repository>
 ) : ViewModel() {
     private val instance = repository.get()
-    private val deviceRepositoryInstance = deviceRepository.get()
     val pokelist = MutableStateFlow(PokeListModel())
     val pokeIdList = MutableStateFlow(listOf(PokemonIdModel()))
     val pokeId = MutableStateFlow(PokemonIdModel())
@@ -37,17 +35,17 @@ class PokemonViewModel @Inject constructor(
     val errorDialog = MutableStateFlow(ErrorDialogModel())
 
     init {
-        Toast.makeText(
-            instance.getContext(),
-            deviceRepositoryInstance.getAllProperties(),
-            Toast.LENGTH_SHORT
-        ).show()
-        initPokeList()
+//        Toast.makeText(
+//            instance.getContext(),
+//            deviceRepositoryInstance.getAllProperties(),
+//            Toast.LENGTH_SHORT
+//        ).show()
+//        initPokeList()
     }
 
     private fun initPokeList() {
         viewModelScope.launch {
-            instance.pokeList(50, 30).collectLatest { res ->
+            instance.pokeList(10, 30).collectLatest { res ->
                 when (res) {
                     is ApiSuccess -> {
                         repeat(res.data.results?.size ?: 0) { i ->
@@ -146,6 +144,26 @@ class PokemonViewModel @Inject constructor(
                 is ApiLoading -> {
                 }
             }
+        }
+    }
+
+    fun startService() {
+        Intent(
+            instance.getContext(),
+            EleanorService::class.java
+        ).apply {
+            action = EleanorService.ACTION_START
+            instance.getContext().startService(this)
+        }
+    }
+
+    fun stopService() {
+        Intent(
+            instance.getContext(),
+            EleanorService::class.java
+        ).apply {
+            action = EleanorService.ACTION_STOP
+            instance.getContext().startService(this)
         }
     }
 }

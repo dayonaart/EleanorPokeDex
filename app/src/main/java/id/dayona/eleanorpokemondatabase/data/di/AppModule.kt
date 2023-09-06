@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import id.dayona.eleanorpokemondatabase.data.remote.Api
 import id.dayona.eleanorpokemondatabase.data.repoimpl.DeviceRepoImpl
+import id.dayona.eleanorpokemondatabase.data.repoimpl.LocationRepoImpl
 import id.dayona.eleanorpokemondatabase.data.repoimpl.RepoImpl
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -41,9 +42,27 @@ object AppModule {
     fun provideRepository(
         api: Api,
         app: Application,
-        @Named("deviceName") deviceName: String?,
+        @Named("provideLocationRepository") locationRepoImpl: LocationRepoImpl,
+        @Named("provideDeviceRepository") deviceRepoImpl: DeviceRepoImpl,
     ): RepoImpl {
-        return RepoImpl(api, app, deviceName)
+        return RepoImpl(api, app, locationRepoImpl, deviceRepoImpl)
+    }
+
+    @Provides
+    @Singleton
+    @Named("provideLocationRepository")
+    fun provideLocationRepository(
+        app: Application,
+    ): LocationRepoImpl {
+        return LocationRepoImpl(app)
+    }
+
+
+    @Provides
+    @Singleton
+    @Named("provideDeviceRepository")
+    fun provideDeviceRepository(app: Application): DeviceRepoImpl {
+        return DeviceRepoImpl(app)
     }
 
     @Provides
@@ -54,9 +73,4 @@ object AppModule {
         return Build.MANUFACTURER
     }
 
-    @Provides
-    @Singleton
-    fun provideDeviceRepository(app: Application): DeviceRepoImpl {
-        return DeviceRepoImpl(app)
-    }
 }

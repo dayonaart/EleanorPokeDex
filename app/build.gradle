@@ -85,9 +85,7 @@ dependencies {
     implementation("io.github.mmolosay:debounce:1.0.0")
     implementation("io.coil-kt:coil-compose:2.4.0")
 
-
-    //idpay
-    implementation files('libs/SmartPos_1.7.0_R230208')
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
 }
 kapt {
     correctErrorTypes true

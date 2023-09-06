@@ -5,8 +5,10 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import id.dayona.eleanorpokemondatabase.data.repoimpl.DeviceRepoImpl
+import id.dayona.eleanorpokemondatabase.data.repoimpl.LocationRepoImpl
 import id.dayona.eleanorpokemondatabase.data.repoimpl.RepoImpl
 import id.dayona.eleanorpokemondatabase.data.repository.DeviceRepository
+import id.dayona.eleanorpokemondatabase.data.repository.LocationRepository
 import id.dayona.eleanorpokemondatabase.data.repository.Repository
 import javax.inject.Singleton
 
@@ -20,4 +22,9 @@ abstract class RepoModule {
     @Binds
     @Singleton
     abstract fun bindDeviceRepository(deviceRepoImpl: DeviceRepoImpl): DeviceRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLocationRepository(locationRepoImpl: LocationRepoImpl): LocationRepository
+
 }

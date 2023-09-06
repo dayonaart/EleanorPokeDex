@@ -27,12 +27,12 @@ import javax.net.ssl.SSLPeerUnverifiedException
 class RepoImpl @Inject constructor(
     private val api: Api,
     private val appContext: Application,
-    repo2: String?,
+    private val locationRepoImpl: LocationRepoImpl,
+    deviceRepoImpl: DeviceRepoImpl,
 ) : Repository {
-
     init {
         val appName = appContext.getString(R.string.app_name)
-        Log.d(NORMAL_TAG, "HELLO $repo2")
+        Log.d(NORMAL_TAG, "HELLO ${deviceRepoImpl.getAllProperties()}")
     }
 
     override suspend fun pokeList(limit: Int, offset: Int): Flow<ApiResult<PokeListModel>> {
@@ -103,4 +103,9 @@ class RepoImpl @Inject constructor(
     override fun getContext(): Context {
         return appContext.applicationContext
     }
+
+    override fun getLocation(): LocationRepoImpl {
+        return locationRepoImpl
+    }
+
 }

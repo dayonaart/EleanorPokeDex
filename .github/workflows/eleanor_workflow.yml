@@ -28,17 +28,13 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 17
-      - name: Restore dayona.jks
-        run: echo $KEYSTORE_FILE | base64 -d > /home/dayona/Desktop/keystore/dayona.jks
       - name: Build Release AAB
         run: ./gradlew
-          -PKEYSTORE_FILE="../${{ /home/dayona/Desktop/keystore/dayona.jks }}"
-          -PKEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}
-          -PSIGNING_KEY_ALIAS=${{ secrets.SIGNING_KEY_ALIAS }}
-          -PSIGNING_KEY_PASSWORD=${{ secrets.SIGNING_KEY_PASSWORD }}
+          -PKEYSTORE_FILE="../${{ secrets.SIGNINGKEYBASE64 }}"
+          -PKEYSTORE_PASSWORD=${{ secrets.KEYSTOREPASSWORD }}
+          -PSIGNING_KEY_ALIAS=${{ secrets.ALIAS }}
+          -PSIGNING_KEY_PASSWORD=${{ secrets.KEYPASSWORD }}
           app:bundleRelease
-      - name: Build Release AAB
-        run: ./gradlew app:bundleRelease
       - name: Upload AAB
         uses: actions/upload-artifact@v1
         with:

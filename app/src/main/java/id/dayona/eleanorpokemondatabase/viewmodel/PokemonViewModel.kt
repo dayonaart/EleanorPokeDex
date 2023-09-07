@@ -14,7 +14,7 @@ import id.dayona.eleanorpokemondatabase.data.ApiException
 import id.dayona.eleanorpokemondatabase.data.ApiLoading
 import id.dayona.eleanorpokemondatabase.data.ApiSuccess
 import id.dayona.eleanorpokemondatabase.data.NORMAL_TAG
-import id.dayona.eleanorpokemondatabase.data.database.entity.PokemonListEntity
+import id.dayona.eleanorpokemondatabase.data.database.entity.AppDatabaseEntity
 import id.dayona.eleanorpokemondatabase.data.model.ErrorDialogModel
 import id.dayona.eleanorpokemondatabase.data.model.PokeListModel
 import id.dayona.eleanorpokemondatabase.data.model.PokemonIdModel
@@ -53,11 +53,13 @@ class PokemonViewModel @Inject constructor(
 
     private fun initPokeList() {
         viewModelScope.launch {
-            instance.pokeList(10, 30).collectLatest { res ->
+            instance.pokeList(20, 30).collectLatest { res ->
                 when (res) {
                     is ApiSuccess -> {
-//                        insertDatabase(res.data)
-//                        pokeDatabase.emit(databaseInstance.getAll())
+                        databaseInstance.insert(
+                            data = AppDatabaseEntity(1, Gson().toJson(res.data)),
+                        )
+                        pokeDatabase.emit(databaseInstance.getAll())
                         repeat(res.data.results?.size ?: 0) { i ->
                             val url =
                                 res.data.results!![i]?.url!!.replace(
@@ -177,12 +179,4 @@ class PokemonViewModel @Inject constructor(
         }
     }
 
-    private fun <T> insertDatabase(data: T) {
-        databaseInstance.insertAll(
-            pokemonListEntity = PokemonListEntity(
-                uid = 1,
-                Gson().toJson(data)
-            )
-        )
-    }
 }

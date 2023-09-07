@@ -6,7 +6,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import id.dayona.eleanorpokemondatabase.data.database.entity.PokemonListEntity
+import id.dayona.eleanorpokemondatabase.data.database.entity.AppDatabaseEntity
 import id.dayona.eleanorpokemondatabase.data.repoimpl.DeviceRepoImpl
 import id.dayona.eleanorpokemondatabase.data.repoimpl.LocationRepoImpl
 import id.dayona.eleanorpokemondatabase.data.repoimpl.RepoImpl
@@ -33,7 +33,7 @@ abstract class RepoModule {
 
 }
 
-@Database(entities = [PokemonListEntity::class], version = 1)
+@Database(entities = [AppDatabaseEntity::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun bindDatabaseRepositoryDao(): DatabaseRepositoryDao
 }

@@ -29,9 +29,7 @@ interface HomeScreen : LoadingDialog, DetailPokemonScreen {
     @Composable
     fun Home() {
         val pokeIdList by pokemonViewModel.pokeIdList.collectAsState()
-        val pokeDatabase by pokemonViewModel.pokeDatabase.collectAsState()
         Column {
-            Text(text = "${pokeDatabase?.pokeListModel}")
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 userScrollEnabled = true,

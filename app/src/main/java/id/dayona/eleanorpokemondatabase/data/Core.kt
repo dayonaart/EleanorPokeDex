@@ -38,3 +38,4 @@ const val ACTION_START = "ACTION_START"
 const val ACTION_STOP = "ACTION_STOP"
 val NORMAL_TAG = EleanorPokemonApp::class.java.simpleName
 val API_TAG = "API::TAG"
+val DATABASE_TAG = "DATABASE::TAG"

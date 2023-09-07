@@ -1,7 +1,7 @@
 package id.dayona.eleanorpokemondatabase.data.di
 
 import android.app.Application
-import android.os.Build
+import androidx.room.Room
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,13 +10,12 @@ import id.dayona.eleanorpokemondatabase.data.remote.Api
 import id.dayona.eleanorpokemondatabase.data.repoimpl.DeviceRepoImpl
 import id.dayona.eleanorpokemondatabase.data.repoimpl.LocationRepoImpl
 import id.dayona.eleanorpokemondatabase.data.repoimpl.RepoImpl
+import id.dayona.eleanorpokemondatabase.data.repository.DatabaseRepositoryDao
 import id.dayona.eleanorpokemondatabase.data.repository.DeviceRepository
-import id.dayona.eleanorpokemondatabase.data.repository.LocationRepository
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-import javax.inject.Named
 import javax.inject.Singleton
 
 
@@ -45,9 +44,18 @@ object AppModule {
         api: Api,
         app: Application,
         deviceRepository: DeviceRepository,
-        locationRepository: LocationRepository
     ): RepoImpl {
-        return RepoImpl(api, app, deviceRepository, locationRepository)
+        return RepoImpl(api, app, deviceRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDatabase(app: Application): DatabaseRepositoryDao {
+        val db = Room.databaseBuilder(
+            app,
+            AppDatabase::class.java, "pokedb"
+        ).allowMainThreadQueries().build()
+        return db.bindDatabaseRepositoryDao()
     }
 
     @Provides
@@ -56,19 +64,11 @@ object AppModule {
         return LocationRepoImpl(app)
     }
 
-
     @Provides
     @Singleton
     fun provideDeviceRepository(app: Application): DeviceRepoImpl {
         return DeviceRepoImpl(app)
     }
 
-    @Provides
-    @Singleton
-    @Named("deviceName")
-    fun deviceName(
-    ): String? {
-        return Build.MANUFACTURER
-    }
-
 }
+

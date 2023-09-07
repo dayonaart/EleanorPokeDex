@@ -4,18 +4,23 @@ import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import dagger.Lazy
 import dagger.hilt.android.lifecycle.HiltViewModel
+import id.dayona.eleanorpokemondatabase.data.ACTION_START
+import id.dayona.eleanorpokemondatabase.data.ACTION_STOP
 import id.dayona.eleanorpokemondatabase.data.ApiError
 import id.dayona.eleanorpokemondatabase.data.ApiException
 import id.dayona.eleanorpokemondatabase.data.ApiLoading
 import id.dayona.eleanorpokemondatabase.data.ApiSuccess
-import id.dayona.eleanorpokemondatabase.data.service.EleanorService
 import id.dayona.eleanorpokemondatabase.data.NORMAL_TAG
+import id.dayona.eleanorpokemondatabase.data.database.entity.PokemonListEntity
 import id.dayona.eleanorpokemondatabase.data.model.ErrorDialogModel
 import id.dayona.eleanorpokemondatabase.data.model.PokeListModel
 import id.dayona.eleanorpokemondatabase.data.model.PokemonIdModel
+import id.dayona.eleanorpokemondatabase.data.repository.DatabaseRepositoryDao
 import id.dayona.eleanorpokemondatabase.data.repository.Repository
+import id.dayona.eleanorpokemondatabase.data.service.EleanorService
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -25,9 +30,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PokemonViewModel @Inject constructor(
-    repository: Lazy<Repository>
+    repository: Lazy<Repository>,
+    databaseRepositoryDao: Lazy<DatabaseRepositoryDao>
 ) : ViewModel() {
     private val instance = repository.get()
+    private val databaseInstance = databaseRepositoryDao.get()
+    val pokeDatabase = MutableStateFlow(databaseInstance.getAll())
     val pokelist = MutableStateFlow(PokeListModel())
     val pokeIdList = MutableStateFlow(listOf(PokemonIdModel()))
     val pokeId = MutableStateFlow(PokemonIdModel())
@@ -48,6 +56,8 @@ class PokemonViewModel @Inject constructor(
             instance.pokeList(10, 30).collectLatest { res ->
                 when (res) {
                     is ApiSuccess -> {
+//                        insertDatabase(res.data)
+//                        pokeDatabase.emit(databaseInstance.getAll())
                         repeat(res.data.results?.size ?: 0) { i ->
                             val url =
                                 res.data.results!![i]?.url!!.replace(
@@ -152,7 +162,7 @@ class PokemonViewModel @Inject constructor(
             instance.getContext(),
             EleanorService::class.java
         ).apply {
-            action = EleanorService.ACTION_START
+            action = ACTION_START
             instance.getContext().startService(this)
         }
     }
@@ -162,8 +172,17 @@ class PokemonViewModel @Inject constructor(
             instance.getContext(),
             EleanorService::class.java
         ).apply {
-            action = EleanorService.ACTION_STOP
+            action = ACTION_STOP
             instance.getContext().startService(this)
         }
+    }
+
+    private fun <T> insertDatabase(data: T) {
+        databaseInstance.insertAll(
+            pokemonListEntity = PokemonListEntity(
+                uid = 1,
+                Gson().toJson(data)
+            )
+        )
     }
 }

@@ -15,7 +15,6 @@ import id.dayona.eleanorpokemondatabase.data.model.PokeListModel
 import id.dayona.eleanorpokemondatabase.data.model.PokemonIdModel
 import id.dayona.eleanorpokemondatabase.data.remote.Api
 import id.dayona.eleanorpokemondatabase.data.repository.DeviceRepository
-import id.dayona.eleanorpokemondatabase.data.repository.LocationRepository
 import id.dayona.eleanorpokemondatabase.data.repository.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -30,7 +29,6 @@ class RepoImpl @Inject constructor(
     private val api: Api,
     private val appContext: Application,
     deviceRepository: DeviceRepository,
-    private val locationRepository: LocationRepository
 ) : Repository {
     init {
         val appName = appContext.getString(R.string.app_name)

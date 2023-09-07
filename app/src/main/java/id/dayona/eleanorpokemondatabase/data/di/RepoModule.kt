@@ -33,7 +33,7 @@ abstract class RepoModule {
 
 }
 
-@Database(entities = [AppDatabaseEntity::class], version = 1)
+@Database(entities = [AppDatabaseEntity::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun bindDatabaseRepositoryDao(): DatabaseRepositoryDao
 }

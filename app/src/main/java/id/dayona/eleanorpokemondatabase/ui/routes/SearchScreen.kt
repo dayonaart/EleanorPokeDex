@@ -46,14 +46,14 @@ interface SearchScreen {
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = {
                     focusManager.clearFocus()
-                    pokemonViewModel.searchPokemon(textController)
+                    pokemonViewModel.searchPokeName(textController)
                 }),
                 onValueChange = {
                     textController = it
                 })
             Button(modifier = Modifier.align(Alignment.End), onClick = {
                 focusManager.clearFocus()
-                pokemonViewModel.searchPokemon(textController)
+                pokemonViewModel.searchPokeName(textController)
             }) {
                 Text(text = "search")
             }

@@ -14,30 +14,18 @@ interface DatabaseRepositoryDao {
 
     @Query("SELECT * FROM app_database WHERE id IN (:id)")
     fun loadByIds(id: Int): AppDatabaseEntity?
+
 //
 //    @Query("SELECT * FROM appdatabaseentity WHERE data LIKE :name LIKE :name LIMIT 1")
 //    fun findByName(name: String): AppDatabaseEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(data: AppDatabaseEntity?) {
-        data.apply {
-            this?.createdAt = System.currentTimeMillis()
-        }
-    }
+    fun insert(data: AppDatabaseEntity?)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun update(data: AppDatabaseEntity?) {
-        data.apply {
-            this?.modifiedAt = System.currentTimeMillis()
-        }
-    }
+    fun update(data: AppDatabaseEntity?)
 
     @Delete
     fun delete(appDatabaseEntity: AppDatabaseEntity?)
 
-    fun updateWithTimestamp(data: AppDatabaseEntity) {
-        insert(data.apply {
-            modifiedAt = System.currentTimeMillis()
-        })
-    }
 }

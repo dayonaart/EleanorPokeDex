@@ -2,6 +2,7 @@ package id.dayona.eleanorpokemondatabase.viewmodel
 
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
@@ -41,25 +42,21 @@ class PokemonViewModel @Inject constructor(
     val pokeId = MutableStateFlow(PokemonIdModel())
     val loading = MutableStateFlow(false)
     val errorDialog = MutableStateFlow(ErrorDialogModel())
+    private var pokeCount: Int = 10
 
     init {
-//        Toast.makeText(
-//            instance.getContext(),
-//            deviceRepositoryInstance.getAllProperties(),
-//            Toast.LENGTH_SHORT
-//        ).show()
         initPokeList()
     }
 
     private fun initPokeList() {
         viewModelScope.launch {
-            instance.pokeList(20, 30).collectLatest { res ->
+            instance.pokeList(pokeCount, 30).collectLatest { res ->
                 when (res) {
                     is ApiSuccess -> {
                         databaseInstance.insert(
                             data = AppDatabaseEntity(1, Gson().toJson(res.data)),
                         )
-                        pokeDatabase.emit(databaseInstance.getAll())
+                        pokeDatabase.emit(databaseInstance.loadByIds(1))
                         repeat(res.data.results?.size ?: 0) { i ->
                             val url =
                                 res.data.results!![i]?.url!!.replace(
@@ -93,13 +90,16 @@ class PokemonViewModel @Inject constructor(
     }
 
 
-    fun searchPokemon(name: String) {
+    fun searchPokeName(name: String) {
         viewModelScope.launch {
             instance.searchPokemon(name = name).collectLatest { res ->
                 when (res) {
                     is ApiSuccess -> {
                         pokeId.emit(res.data)
                         loading.emit(false)
+                        errorDialog.update {
+                            it.copy(showError = false)
+                        }
                     }
 
                     is ApiError -> {
@@ -179,4 +179,25 @@ class PokemonViewModel @Inject constructor(
         }
     }
 
+    fun sortPoke(i: Int) {
+        when (i) {
+            0 -> {
+                val sorted = pokeIdList.value.sortedBy { it.name }
+                pokeIdList.update { sorted }
+            }
+
+            1 -> {
+                val sorted = pokeIdList.value.sortedBy { it.species?.name }
+                pokeIdList.update { sorted }
+            }
+
+            2 -> {
+                Toast.makeText(instance.getContext(), "Under Develop", Toast.LENGTH_SHORT).show()
+            }
+
+            3 -> {
+                Toast.makeText(instance.getContext(), "Under Develop", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }

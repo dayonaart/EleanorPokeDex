@@ -27,11 +27,10 @@ interface ProfileScreen {
             verticalArrangement = Arrangement.Center
         ) {
             item {
-                Text(text = "$pokeDatabase")
                 Text(
                     text = "id: ${pokeDatabase?.id}\ncreated_at: ${pokeDatabase?.createdAt}\ndata: ${
                         Gson().fromJson(
-                            pokeDatabase?.data,
+                            pokeDatabase?.pokelist,
                             PokeListModel::class.java
                         ).results?.size
                     }"

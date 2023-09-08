@@ -3,12 +3,13 @@ package id.dayona.eleanorpokemondatabase.ui.routes
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -82,10 +83,12 @@ fun ErrorDialog(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Card(
-            shape = CardDefaults.elevatedShape,
+        Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier
-                .border(width = 1.dp, color = Color.Blue)
+                .background(shape = RoundedCornerShape(20), color = Color.Magenta)
+                .size(size = 200.dp)
+
         ) {
             Text(
                 text = dialogText,
@@ -93,5 +96,6 @@ fun ErrorDialog(
                 modifier = Modifier.padding(20.dp)
             )
         }
+
     }
 }

@@ -24,6 +24,7 @@ import id.dayona.eleanorpokemondatabase.ui.routes.ProfileScreen
 import id.dayona.eleanorpokemondatabase.ui.routes.SearchScreen
 import id.dayona.eleanorpokemondatabase.viewmodel.PokemonViewModel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 
 sealed class ScreenRoute(val route: String) {
     object HomeScreen : ScreenRoute("home-screen")
@@ -93,7 +94,17 @@ class Screen : BottomNav, HomeScreen, SearchScreen, FeedScreen, ProfileScreen {
 
     @Composable
     fun MainScreen() {
-        LaunchedEffect(key1 = pokemonViewModel.loading) {
+        LaunchedEffect(pokemonViewModel.errorDialog) {
+            pokemonViewModel.errorDialog.collectLatest {
+                if (it.showError) {
+                    navController.navigate(ScreenRoute.ErrorDialog.route)
+                    pokemonViewModel.errorDialog.update { err ->
+                        err.copy(showError = false)
+                    }
+                }
+            }
+        }
+        LaunchedEffect(pokemonViewModel.loading) {
             pokemonViewModel.loading.collectLatest {
                 if (it) {
                     navController.navigate(ScreenRoute.LoadingDialog.route)
@@ -102,13 +113,7 @@ class Screen : BottomNav, HomeScreen, SearchScreen, FeedScreen, ProfileScreen {
                 }
             }
         }
-        LaunchedEffect(key1 = pokemonViewModel.errorDialog) {
-            pokemonViewModel.errorDialog.collectLatest {
-                if (it.showError) {
-                    navController.navigate(ScreenRoute.ErrorDialog.route)
-                }
-            }
-        }
+
         Scaffold(
             content = { Navigation(it) },
             bottomBar = { BottomNavigator() },

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
 import id.dayona.eleanorpokemondatabase.EleanorPokemonApp
+import java.io.File
 
 sealed interface ApiResult<T>
 class ApiSuccess<T>(val data: T) : ApiResult<T>
@@ -32,6 +33,17 @@ fun hasPermission(context: Context): Boolean {
         ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
     return !check.contains(false)
+}
+
+@Throws(Exception::class)
+fun getRoomDatabasePath(context: Context, dbName: String): String? {
+    val dbFolderPath = context.filesDir.absolutePath.replace("files", "databases")
+    val dbFile = File("$dbFolderPath/$dbName")
+
+    // Check if database file exist.
+    if (!dbFile.exists()) throw Exception("${dbFile.absolutePath} doesn't exist")
+    return dbFile.absolutePath
+//        return dbFile.length()
 }
 
 const val ACTION_START = "ACTION_START"

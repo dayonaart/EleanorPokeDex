@@ -3,7 +3,6 @@ package id.dayona.eleanorpokemondatabase.data.repoimpl
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import id.dayona.eleanorpokemondatabase.R
 import id.dayona.eleanorpokemondatabase.data.API_TAG
 import id.dayona.eleanorpokemondatabase.data.ApiError
 import id.dayona.eleanorpokemondatabase.data.ApiException
@@ -31,7 +30,6 @@ class RepoImpl @Inject constructor(
     deviceRepository: DeviceRepository,
 ) : Repository {
     init {
-        val appName = appContext.getString(R.string.app_name)
         Log.d(NORMAL_TAG, "HELLO ${deviceRepository.getAllProperties()}")
     }
 
@@ -67,7 +65,7 @@ class RepoImpl @Inject constructor(
                 if (res.isSuccessful) {
                     emit(ApiSuccess(data = res.body()!!))
                 } else {
-                    emit(ApiError(code = res.code(), message = res.raw().message))
+                    emit(ApiError(code = res.code(), message = res.errorBody()?.string()))
                 }
             } catch (e: HttpException) {
                 emit(ApiException(e = "${e.message}"))
@@ -88,7 +86,7 @@ class RepoImpl @Inject constructor(
                 if (res.isSuccessful) {
                     emit(ApiSuccess(data = res.body()!!))
                 } else {
-                    emit(ApiError(code = res.code(), message = res.raw().message))
+                    emit(ApiError(code = res.code(), message = res.errorBody()?.string()))
                 }
             } catch (e: HttpException) {
                 emit(ApiException(e = "${e.message}"))

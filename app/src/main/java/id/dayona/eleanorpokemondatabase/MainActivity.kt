@@ -2,7 +2,6 @@ package id.dayona.eleanorpokemondatabase
 
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.database.CursorWindow
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -18,10 +17,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import id.dayona.eleanorpokemondatabase.data.PERMISSIONS_REQUIRED
+import id.dayona.eleanorpokemondatabase.data.increaseDatabaseCapacity
 import id.dayona.eleanorpokemondatabase.ui.Screen
 import id.dayona.eleanorpokemondatabase.ui.theme.EleanorPokemonDatabaseTheme
 import id.dayona.eleanorpokemondatabase.viewmodel.PokemonViewModel
-import java.lang.reflect.Field
 
 
 @AndroidEntryPoint
@@ -52,13 +51,7 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("PrivateApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try {
-            val field: Field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
-            field.isAccessible = true
-            field.set(null, 100 * 1024 * 1024)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        increaseDatabaseCapacity()
         checkAppPermission()
         setContent {
             val pokeViewModel = hiltViewModel<PokemonViewModel>()

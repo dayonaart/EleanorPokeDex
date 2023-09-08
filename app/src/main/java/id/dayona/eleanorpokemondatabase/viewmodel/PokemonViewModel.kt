@@ -42,10 +42,10 @@ class PokemonViewModel @Inject constructor(
     private val databaseInstance = databaseRepositoryDao.get()
     val pokeDatabase = databaseInstance.getAll()?.pokeIdList?.data
     private val pokeIdList = MutableStateFlow(PokeIdListModel())
-    val pokeId = MutableStateFlow(PokemonIdModel())
+    val pokemonSearchData = MutableStateFlow(PokeIdListModel())
     val loading = MutableStateFlow(false)
     val errorDialog = MutableStateFlow(ErrorDialogModel())
-    private var pokeCount: Int = 100
+    private var pokeCount: Int = 60
     private val colorList: List<Color>
         get() = listOf(
             Color.Blue,
@@ -112,38 +112,20 @@ class PokemonViewModel @Inject constructor(
         }
     }
 
-
     fun searchPokeName(name: String) {
-        viewModelScope.launch {
-            instance.searchPokemon(name = name).collectLatest { res ->
-                when (res) {
-                    is ApiSuccess -> {
-                        pokeId.emit(res.data)
-                        loading.emit(false)
-                        errorDialog.update {
-                            it.copy(showError = false)
-                        }
-                    }
-
-                    is ApiError -> {
-                        loading.emit(false)
-                        errorDialog.update {
-                            it.copy(showError = true, errorText = "${res.code}\n${res.message}")
-                        }
-                    }
-
-
-                    is ApiException -> {
-                        loading.emit(false)
-                        errorDialog.update {
-                            it.copy(showError = true, errorText = res.e)
-                        }
-                    }
-
-                    is ApiLoading -> {
-                        loading.emit(true)
-                    }
-                }
+        val search = databaseInstance.getAll()?.pokeIdList?.data?.filter {
+            it?.name?.contains(name) ?: false
+        } ?: listOf()
+        if (search.size > 1) {
+            pokemonSearchData.update {
+                it.copy(data = search)
+            }
+        } else {
+            pokemonSearchData.update {
+                it.copy(data = listOf())
+            }
+            errorDialog.update {
+                it.copy(showError = true, errorText = "Not Found")
             }
         }
     }

@@ -3,10 +3,12 @@ package id.dayona.eleanorpokemondatabase.data
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.database.CursorWindow
 import android.os.Build
 import androidx.core.content.ContextCompat
 import id.dayona.eleanorpokemondatabase.EleanorPokemonApp
 import java.io.File
+import java.lang.reflect.Field
 
 sealed interface ApiResult<T>
 class ApiSuccess<T>(val data: T) : ApiResult<T>
@@ -44,6 +46,16 @@ fun getRoomDatabasePath(context: Context, dbName: String): String? {
     if (!dbFile.exists()) throw Exception("${dbFile.absolutePath} doesn't exist")
     return dbFile.absolutePath
 //        return dbFile.length()
+}
+
+fun increaseDatabaseCapacity() {
+    try {
+        val field: Field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
+        field.isAccessible = true
+        field.set(null, 600 * 1024 * 1024)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 const val ACTION_START = "ACTION_START"

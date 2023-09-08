@@ -11,8 +11,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,20 +24,19 @@ interface DetailPokemonScreen {
 
     @Composable
     fun DetailPokemon(index: Int) {
-        val pokeIdList by pokemonViewModel.pokeIdList.collectAsState()
-        val poke = pokeIdList[index]
-        val ability = poke.abilities?.map { it?.ability?.name }
+        val data = pokemonViewModel.getPokemonDataState()[index]
+        val ability = data?.abilities?.map { it?.ability?.name }
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             AsyncImage(
-                model = poke.sprites?.other?.officialArtwork?.frontDefault,
-                contentDescription = "pokemon",
+                model = data?.sprites?.other?.officialArtwork?.frontDefault,
+                contentDescription = "datamon",
                 modifier = Modifier.size(300.dp)
             )
-            Text(text = "${poke.name}", fontSize = 40.sp, color = Color.Green)
+            Text(text = "${data?.name}", fontSize = 40.sp, color = Color.Green)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(10.dp),

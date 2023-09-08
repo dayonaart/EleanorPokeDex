@@ -3,9 +3,12 @@ package id.dayona.eleanorpokemondatabase.viewmodel
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import dagger.Lazy
 import dagger.hilt.android.lifecycle.HiltViewModel
 import id.dayona.eleanorpokemondatabase.data.ACTION_START
@@ -17,7 +20,7 @@ import id.dayona.eleanorpokemondatabase.data.ApiSuccess
 import id.dayona.eleanorpokemondatabase.data.NORMAL_TAG
 import id.dayona.eleanorpokemondatabase.data.database.entity.AppDatabaseEntity
 import id.dayona.eleanorpokemondatabase.data.model.ErrorDialogModel
-import id.dayona.eleanorpokemondatabase.data.model.PokeListModel
+import id.dayona.eleanorpokemondatabase.data.model.PokeIdListModel
 import id.dayona.eleanorpokemondatabase.data.model.PokemonIdModel
 import id.dayona.eleanorpokemondatabase.data.repository.DatabaseRepositoryDao
 import id.dayona.eleanorpokemondatabase.data.repository.Repository
@@ -28,6 +31,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class PokemonViewModel @Inject constructor(
@@ -36,27 +40,37 @@ class PokemonViewModel @Inject constructor(
 ) : ViewModel() {
     private val instance = repository.get()
     private val databaseInstance = databaseRepositoryDao.get()
-    val pokeDatabase = MutableStateFlow(databaseInstance.getAll())
-    val pokelist = MutableStateFlow(PokeListModel())
-    val pokeIdList = MutableStateFlow(listOf(PokemonIdModel()))
+    val pokeDatabase = databaseInstance.getAll()?.pokeIdList?.data
+    private val pokeIdList = MutableStateFlow(PokeIdListModel())
     val pokeId = MutableStateFlow(PokemonIdModel())
     val loading = MutableStateFlow(false)
     val errorDialog = MutableStateFlow(ErrorDialogModel())
-    private var pokeCount: Int = 10
+    private var pokeCount: Int = 100
+    private val colorList: List<Color>
+        get() = listOf(
+            Color.Blue,
+            Color.Magenta,
+            Color.DarkGray,
+            Color.Green,
+            Color.Red,
+            Color.Yellow
+        )
+    private val randomColor: Color
+        get() = colorList[Random.nextInt(0, 6)]
 
     init {
         initPokeList()
     }
 
+    private val pokeDatabaseSize = pokeDatabase?.size
+        ?: 0
+
     private fun initPokeList() {
+        if (pokeCount < pokeDatabaseSize) return
         viewModelScope.launch {
             instance.pokeList(pokeCount, 30).collectLatest { res ->
                 when (res) {
                     is ApiSuccess -> {
-                        databaseInstance.insert(
-                            data = AppDatabaseEntity(1, Gson().toJson(res.data)),
-                        )
-                        pokeDatabase.emit(databaseInstance.loadByIds(1))
                         repeat(res.data.results?.size ?: 0) { i ->
                             val url =
                                 res.data.results!![i]?.url!!.replace(
@@ -65,6 +79,15 @@ class PokemonViewModel @Inject constructor(
                                 )
                             getPokeId(url = url) {
                                 if (!it) this.cancel()
+                                if (pokeDatabaseSize < (i + 1)) {
+                                    databaseInstance.insert(
+                                        data = AppDatabaseEntity(
+                                            1,
+                                            res.data,
+                                            pokeIdList.value
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
@@ -130,7 +153,9 @@ class PokemonViewModel @Inject constructor(
             when (res) {
                 is ApiSuccess -> {
                     pokeIdList.update {
-                        (it + res.data).filter { f -> f.name != null }
+                        it.copy(data = (it.data + res.data).onEach { c ->
+                            c?.color = randomColor
+                        }.filter { f -> f?.name != null })
                     }
                     onSuccess(true)
                 }
@@ -159,6 +184,22 @@ class PokemonViewModel @Inject constructor(
         }
     }
 
+    @Composable
+    fun getPokemonDataState(): List<PokemonIdModel?> {
+        val pokeState by pokeIdList.collectAsState()
+        val data = pokeDatabase ?: listOf()
+        val ret = if (data.size < pokeState.data.size) {
+            pokeState.data.sortedBy {
+                it?.name
+            }
+        } else {
+            data.sortedBy {
+                it?.name
+            }
+        }
+        return ret
+    }
+
     fun startService() {
         Intent(
             instance.getContext(),
@@ -182,13 +223,11 @@ class PokemonViewModel @Inject constructor(
     fun sortPoke(i: Int) {
         when (i) {
             0 -> {
-                val sorted = pokeIdList.value.sortedBy { it.name }
-                pokeIdList.update { sorted }
+                Toast.makeText(instance.getContext(), "Under Develop", Toast.LENGTH_SHORT).show()
             }
 
             1 -> {
-                val sorted = pokeIdList.value.sortedBy { it.species?.name }
-                pokeIdList.update { sorted }
+                Toast.makeText(instance.getContext(), "Under Develop", Toast.LENGTH_SHORT).show()
             }
 
             2 -> {

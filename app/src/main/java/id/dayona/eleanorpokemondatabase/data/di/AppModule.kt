@@ -2,8 +2,6 @@ package id.dayona.eleanorpokemondatabase.data.di
 
 import android.app.Application
 import androidx.room.Room
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,14 +48,6 @@ object AppModule {
         return RepoImpl(api, app, deviceRepository)
     }
 
-    private val MIGRATION_1_2 = object : Migration(1, 2) {
-        override fun migrate(database: SupportSQLiteDatabase) {
-            database.execSQL(
-                "CREATE TABLE `app_database2` (`id` INTEGER, `data` TEXT NULL, " +
-                        "PRIMARY KEY(`id`))"
-            )
-        }
-    }
 
     @Provides
     @Singleton

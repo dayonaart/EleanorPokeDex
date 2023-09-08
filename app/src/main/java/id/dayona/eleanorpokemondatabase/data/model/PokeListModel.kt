@@ -1,5 +1,6 @@
 package id.dayona.eleanorpokemondatabase.data.model
 
+
 data class PokeListModel(
     val next: String? = null,
     val previous: String? = null,

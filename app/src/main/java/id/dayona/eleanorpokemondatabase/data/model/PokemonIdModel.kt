@@ -1,7 +1,9 @@
 package id.dayona.eleanorpokemondatabase.data.model
 
+import androidx.compose.ui.graphics.Color
 import com.google.gson.annotations.SerializedName
 
+data class PokeIdListModel(val data: List<PokemonIdModel?> = listOf())
 data class PokemonIdModel(
 
     @field:SerializedName("location_area_encounters")
@@ -56,7 +58,10 @@ data class PokemonIdModel(
     val height: Int? = null,
 
     @field:SerializedName("order")
-    val order: Int? = null
+    val order: Int? = null,
+
+    @field:SerializedName("color")
+    var color: Color? = null
 )
 
 data class TypesItem(

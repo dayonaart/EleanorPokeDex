@@ -15,7 +15,7 @@ interface DatabaseRepositoryDao {
     @Query("SELECT * FROM app_database WHERE id IN (:id)")
     fun loadByIds(id: Int): AppDatabaseEntity?
 
-//
+    //
 //    @Query("SELECT * FROM appdatabaseentity WHERE data LIKE :name LIKE :name LIMIT 1")
 //    fun findByName(name: String): AppDatabaseEntity?
 
@@ -27,5 +27,4 @@ interface DatabaseRepositoryDao {
 
     @Delete
     fun delete(appDatabaseEntity: AppDatabaseEntity?)
-
 }

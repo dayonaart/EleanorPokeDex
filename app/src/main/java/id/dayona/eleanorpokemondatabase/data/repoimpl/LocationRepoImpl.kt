@@ -55,9 +55,6 @@ class LocationRepoImpl @Inject constructor(
                     }
                 }
 
-                override fun onLocationAvailability(p0: LocationAvailability) {
-                    super.onLocationAvailability(p0)
-                }
             }
             client.requestLocationUpdates(
                 request,

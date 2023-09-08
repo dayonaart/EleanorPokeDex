@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,8 +19,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,28 +30,17 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import id.dayona.eleanorpokemondatabase.ui.ScreenRoute
 import id.dayona.eleanorpokemondatabase.viewmodel.PokemonViewModel
-import kotlin.random.Random
 
 interface HomeScreen : LoadingDialog, DetailPokemonScreen {
     val navController: NavHostController
     override val pokemonViewModel: PokemonViewModel
-    val colorList: List<Color>
-        get() = listOf(
-            Color.Blue,
-            Color.Magenta,
-            Color.DarkGray,
-            Color.Green,
-            Color.Red,
-            Color.Yellow
-        )
-    val randomColor: Color
-        get() = colorList[Random.nextInt(0, 6)]
+
     val buttonListTitle: List<String>
         get() = listOf("by name", "by species", "increase", "decrease")
 
     @Composable
     fun Home() {
-        val pokeIdList by pokemonViewModel.pokeIdList.collectAsState()
+        val data = pokemonViewModel.getPokemonDataState()
         Column {
             LazyHorizontalGrid(
                 contentPadding = PaddingValues(10.dp),
@@ -78,10 +66,13 @@ interface HomeScreen : LoadingDialog, DetailPokemonScreen {
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(count = pokeIdList.filter { it.name != null }.size) { i ->
+                items(count = data.filter { it?.name != null }.size) { i ->
                     Box(
                         modifier = Modifier
-                            .background(shape = RoundedCornerShape(20), color = Color.White)
+                            .background(
+                                shape = RoundedCornerShape(20),
+                                color = data[i]?.color ?: Color.White
+                            )
                             .border(
                                 width = 1.dp,
                                 color = Color.Black,
@@ -100,34 +91,46 @@ interface HomeScreen : LoadingDialog, DetailPokemonScreen {
                         ) {
                             Box {
                                 AsyncImage(
-                                    model = pokeIdList[i].sprites?.other?.officialArtwork?.frontDefault,
+                                    model = data[i]?.sprites?.other?.officialArtwork?.frontDefault,
                                     contentDescription = "Pokemon"
                                 )
-
+                                Spacer(modifier = Modifier.height(5.dp))
                                 Box(
                                     modifier = Modifier
                                         .background(
-                                            color = Color.Blue,
+                                            color = Color.White,
                                             shape = RoundedCornerShape(50)
                                         )
                                         .padding(5.dp)
-                                        .size(15.dp),
+                                        .size(if (i < 99) 15.dp else 20.dp),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Text(
                                         text = "${i + 1}",
                                         fontSize = 10.sp,
-                                        color = Color.White,
+                                        color = Color.Black,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
                             }
-                            Text(
-                                text = "${pokeIdList[i].name}",
-                                textAlign = TextAlign.Center,
-                                color = Color.Black
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        color = Color.White,
+                                        shape = RoundedCornerShape(20)
+                                    )
+                                    .padding(horizontal = 5.dp, vertical = 3.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = "${data[i]?.name}",
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
+
                     }
                 }
             }

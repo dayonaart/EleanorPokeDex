@@ -2,13 +2,13 @@ package id.dayona.eleanorpokemondatabase.data.repository
 
 import android.content.Context
 import id.dayona.eleanorpokemondatabase.data.ApiResult
-import id.dayona.eleanorpokemondatabase.data.model.PokeListModel
-import id.dayona.eleanorpokemondatabase.data.model.PokemonIdModel
+import id.dayona.eleanorpokemondatabase.data.state.PokemonInitState
+import id.dayona.eleanorpokemondatabase.data.state.PokemonState
 import kotlinx.coroutines.flow.Flow
 
 interface Repository {
-    suspend fun pokeList(limit: Int, offset: Int): Flow<ApiResult<PokeListModel>>
-    suspend fun pokemonByUrl(url: String): Flow<ApiResult<PokemonIdModel>>
-    suspend fun searchPokemon(name: String): Flow<ApiResult<PokemonIdModel>>
+    suspend fun initPokeList(limit: Int, offset: Int): Flow<ApiResult<PokemonInitState>>
+    suspend fun pokemonByUrl(url: String): Flow<ApiResult<PokemonState>>
+    suspend fun searchPokemon(name: String): Flow<ApiResult<PokemonState>>
     fun getContext(): Context
 }

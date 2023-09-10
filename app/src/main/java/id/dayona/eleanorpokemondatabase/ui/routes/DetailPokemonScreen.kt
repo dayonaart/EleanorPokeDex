@@ -23,9 +23,11 @@ interface DetailPokemonScreen {
     val pokemonViewModel: PokemonViewModel
 
     @Composable
-    fun DetailPokemon(index: Int) {
-        val data = pokemonViewModel.getPokemonDataState()[index]
-        val ability = data?.abilities?.map { it?.ability?.name }
+    fun DetailPokemon(id: Int) {
+        val data = pokemonViewModel.getPokemonData().find {
+            it.pokemonId == id
+        }
+        val ability = data?.abilities?.map { it.ability.name }
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,

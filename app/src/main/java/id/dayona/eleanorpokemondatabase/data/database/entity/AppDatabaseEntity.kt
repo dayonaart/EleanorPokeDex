@@ -1,23 +1,31 @@
 package id.dayona.eleanorpokemondatabase.data.database.entity
 
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import com.google.gson.Gson
-import id.dayona.eleanorpokemondatabase.data.model.PokeIdListModel
-import id.dayona.eleanorpokemondatabase.data.model.PokeListModel
+import com.google.gson.reflect.TypeToken
+import id.dayona.eleanorpokemondatabase.data.state.AbilitiesItem
+import id.dayona.eleanorpokemondatabase.data.state.FormsItem
+import id.dayona.eleanorpokemondatabase.data.state.GameIndicesItem
+import id.dayona.eleanorpokemondatabase.data.state.HeldItemsItem
+import id.dayona.eleanorpokemondatabase.data.state.MovesItem
+import id.dayona.eleanorpokemondatabase.data.state.PokemonState
+import id.dayona.eleanorpokemondatabase.data.state.Species
+import id.dayona.eleanorpokemondatabase.data.state.Sprites
+import id.dayona.eleanorpokemondatabase.data.state.StatsItem
+import id.dayona.eleanorpokemondatabase.data.state.TypesItem
 import java.util.Date
 
 
 @Entity(tableName = "app_database")
 data class AppDatabaseEntity(
-    @PrimaryKey
-    var id: Int?,
-    @ColumnInfo("poke_list")
-    var pokelist: PokeListModel?,
-    @ColumnInfo("poke_id_list")
-    var pokeIdList: PokeIdListModel?,
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0,
+    @Embedded
+    var pokemon: PokemonState,
 ) {
     @ColumnInfo(name = "create_at", defaultValue = "CURRENT_TIMESTAMP")
     var createdAt: Date? = EntityConverter.toDate(System.currentTimeMillis())
@@ -35,22 +43,110 @@ object EntityConverter {
     }
 
     @TypeConverter
-    fun fromPokeListToJSON(pokelist: PokeListModel?): String {
-        return Gson().toJson(pokelist)
+    fun a(typeItems: List<TypesItem?>?): String {
+        return Gson().toJson(typeItems)
     }
 
     @TypeConverter
-    fun fromJSONToPokeList(json: String): PokeListModel? {
-        return Gson().fromJson(json, PokeListModel::class.java)
+    fun aa(json: String): List<TypesItem?>? {
+        val listType = object : TypeToken<List<TypesItem?>?>() {}.type
+        return Gson().fromJson(json, listType)
     }
 
     @TypeConverter
-    fun fromPokeIdListToJSON(pokedIdList: PokeIdListModel?): String {
-        return Gson().toJson(pokedIdList)
+    fun b(typeItems: List<HeldItemsItem?>?): String {
+        return Gson().toJson(typeItems)
     }
 
     @TypeConverter
-    fun fromJSONToPokeIdList(json: String): PokeIdListModel? {
-        return Gson().fromJson(json, PokeIdListModel::class.java)
+    fun bb(json: String): List<HeldItemsItem?>? {
+        val listType = object : TypeToken<List<HeldItemsItem?>?>() {}.type
+        return Gson().fromJson(json, listType)
+    }
+
+    @TypeConverter
+    fun c(typeItems: List<Any?>?): String {
+        return Gson().toJson(typeItems)
+    }
+
+    @TypeConverter
+    fun cc(json: String): List<Any?>? {
+        val listType = object : TypeToken<List<Any?>?>() {}.type
+        return Gson().fromJson(json, listType)
+    }
+
+    @TypeConverter
+    fun d(typeItems: Sprites?): String {
+        return Gson().toJson(typeItems)
+    }
+
+    @TypeConverter
+    fun dd(json: String): Sprites? {
+        return Gson().fromJson(json, Sprites::class.java)
+    }
+
+    @TypeConverter
+    fun e(typeItems: List<AbilitiesItem?>?): String {
+        return Gson().toJson(typeItems)
+    }
+
+    @TypeConverter
+    fun ee(json: String): List<AbilitiesItem?>? {
+        val listType = object : TypeToken<List<AbilitiesItem?>?>() {}.type
+        return Gson().fromJson(json, listType)
+    }
+
+    @TypeConverter
+    fun f(typeItems: List<GameIndicesItem?>?): String {
+        return Gson().toJson(typeItems)
+    }
+
+    @TypeConverter
+    fun ff(json: String): List<GameIndicesItem?>? {
+        val listType = object : TypeToken<List<GameIndicesItem?>?>() {}.type
+        return Gson().fromJson(json, listType)
+    }
+
+    @TypeConverter
+    fun g(json: String): Species? {
+        return Gson().fromJson(json, Species::class.java)
+    }
+
+    @TypeConverter
+    fun gg(typeItems: Species?): String {
+        return Gson().toJson(typeItems)
+    }
+
+    @TypeConverter
+    fun h(typeItems: List<StatsItem?>?): String {
+        return Gson().toJson(typeItems)
+    }
+
+    @TypeConverter
+    fun hh(json: String): List<StatsItem?>? {
+        val listType = object : TypeToken<List<StatsItem?>?>() {}.type
+        return Gson().fromJson(json, listType)
+    }
+
+    @TypeConverter
+    fun j(typeItems: List<MovesItem?>?): String {
+        return Gson().toJson(typeItems)
+    }
+
+    @TypeConverter
+    fun jj(json: String): List<MovesItem?>? {
+        val listType = object : TypeToken<List<MovesItem?>?>() {}.type
+        return Gson().fromJson(json, listType)
+    }
+
+    @TypeConverter
+    fun k(typeItems: List<FormsItem?>?): String {
+        return Gson().toJson(typeItems)
+    }
+
+    @TypeConverter
+    fun kk(json: String): List<FormsItem?>? {
+        val listType = object : TypeToken<List<FormsItem?>?>() {}.type
+        return Gson().fromJson(json, listType)
     }
 }

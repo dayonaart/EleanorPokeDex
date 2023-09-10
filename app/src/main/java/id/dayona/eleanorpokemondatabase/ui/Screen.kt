@@ -61,10 +61,10 @@ class Screen : BottomNav, HomeScreen, SearchScreen, FeedScreen, ProfileScreen {
                 Profile()
             }
             composable(
-                ScreenRoute.DetailPokemon.route + "/{index}",
-                arguments = listOf(navArgument("index") { type = NavType.IntType })
+                ScreenRoute.DetailPokemon.route + "/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
             ) {
-                val args = it.arguments?.getInt("index")
+                val args = it.arguments?.getInt("id")
                 DetailPokemon(args!!)
             }
             dialog(

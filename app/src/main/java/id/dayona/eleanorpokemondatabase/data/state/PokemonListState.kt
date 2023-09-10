@@ -1,7 +1,7 @@
-package id.dayona.eleanorpokemondatabase.data.model
+package id.dayona.eleanorpokemondatabase.data.state
 
 
-data class PokeListModel(
+data class PokemonInitState(
     val next: String? = null,
     val previous: String? = null,
     val count: Int? = null,

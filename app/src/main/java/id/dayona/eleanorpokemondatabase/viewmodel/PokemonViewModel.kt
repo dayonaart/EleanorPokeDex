@@ -2,11 +2,9 @@ package id.dayona.eleanorpokemondatabase.viewmodel
 
 import android.content.Intent
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.Lazy
@@ -19,15 +17,16 @@ import id.dayona.eleanorpokemondatabase.data.ApiLoading
 import id.dayona.eleanorpokemondatabase.data.ApiSuccess
 import id.dayona.eleanorpokemondatabase.data.NORMAL_TAG
 import id.dayona.eleanorpokemondatabase.data.database.entity.AppDatabaseEntity
-import id.dayona.eleanorpokemondatabase.data.model.ErrorDialogModel
-import id.dayona.eleanorpokemondatabase.data.model.PokeIdListModel
-import id.dayona.eleanorpokemondatabase.data.model.PokemonIdModel
 import id.dayona.eleanorpokemondatabase.data.repository.DatabaseRepositoryDao
 import id.dayona.eleanorpokemondatabase.data.repository.Repository
 import id.dayona.eleanorpokemondatabase.data.service.EleanorService
+import id.dayona.eleanorpokemondatabase.data.state.ErrorDialogState
+import id.dayona.eleanorpokemondatabase.data.state.PokemonState
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -40,35 +39,47 @@ class PokemonViewModel @Inject constructor(
 ) : ViewModel() {
     private val instance = repository.get()
     private val databaseInstance = databaseRepositoryDao.get()
-    val pokeDatabase = databaseInstance.getAll()?.pokeIdList?.data
-    private val pokeIdList = MutableStateFlow(PokeIdListModel())
-    val pokemonSearchData = MutableStateFlow(PokeIdListModel())
+    private val pokemonDatabase = MutableStateFlow(listOf<AppDatabaseEntity>())
+    private val pokemonListState = MutableStateFlow(listOf(PokemonState()))
+    val pokemonSearchData = MutableStateFlow(listOf(PokemonState()))
+    private val pokemonDatabaseCount = databaseInstance.getAll().size
+
     val loading = MutableStateFlow(false)
-    val errorDialog = MutableStateFlow(ErrorDialogModel())
-    private var pokeCount: Int = 60
-    private val colorList: List<Color>
+    val errorDialog = MutableStateFlow(ErrorDialogState())
+    private var pokeCount: Int = 50
+
+    val homeButtonListTitle =
+        MutableStateFlow(listOf(""))
+    private val colorList: List<Long>
         get() = listOf(
-            Color.Blue,
-            Color.Magenta,
-            Color.DarkGray,
-            Color.Green,
-            Color.Red,
-            Color.Yellow
+            0xFF000000,
+            0xFF444444,
+            0xFF888888,
+            0xFFCCCCCC,
+            0xFFFFFFFF,
+            0xFFFF0000,
+            0xFF00FF00,
+            0xFF0000FF,
+            0xFFFFFF00,
+            0xFF00FFFF,
+            0xFFFF00FF
         )
-    private val randomColor: Color
-        get() = colorList[Random.nextInt(0, 6)]
+    private val randomColor: Long
+        get() = colorList[Random.nextInt(0, colorList.size)]
+    private val _pokemonSearchState = MutableStateFlow("")
+    val pokemonSearchController: StateFlow<String> = _pokemonSearchState
 
     init {
-        initPokeList()
+        initPokemonList()
     }
 
-    private val pokeDatabaseSize = pokeDatabase?.size
-        ?: 0
-
-    private fun initPokeList() {
-        if (pokeCount < pokeDatabaseSize) return
+    private fun initPokemonList() {
+        if (pokemonDatabaseCount >= pokeCount) {
+            pokemonDatabase.update { databaseInstance.getAll() }
+            return
+        }
         viewModelScope.launch {
-            instance.pokeList(pokeCount, 30).collectLatest { res ->
+            instance.initPokeList(pokeCount, 30).collectLatest { res ->
                 when (res) {
                     is ApiSuccess -> {
                         repeat(res.data.results?.size ?: 0) { i ->
@@ -77,17 +88,8 @@ class PokemonViewModel @Inject constructor(
                                     "https://pokeapi.co/api/v2/",
                                     ""
                                 )
-                            getPokeId(url = url) {
+                            getPokemonById(url = url) {
                                 if (!it) this.cancel()
-                                if (pokeDatabaseSize < (i + 1)) {
-                                    databaseInstance.insert(
-                                        data = AppDatabaseEntity(
-                                            1,
-                                            res.data,
-                                            pokeIdList.value
-                                        )
-                                    )
-                                }
                             }
                         }
                     }
@@ -112,33 +114,51 @@ class PokemonViewModel @Inject constructor(
         }
     }
 
-    fun searchPokeName(name: String) {
-        val search = databaseInstance.getAll()?.pokeIdList?.data?.filter {
-            it?.name?.contains(name) ?: false
-        } ?: listOf()
-        if (search.size > 1) {
-            pokemonSearchData.update {
-                it.copy(data = search)
+    @Composable
+    fun getPokemonData(): List<PokemonState> {
+        val pokemonState by pokemonListState.collectAsState()
+        val pokemonDatabase by pokemonDatabase.collectAsState()
+        return if (pokemonDatabase.map { it.pokemon.name.isNotEmpty() }.contains(true)) {
+            val data = pokemonDatabase.map { it.pokemon }
+            homeButtonListTitle.update {
+                listOf("sort by name", "sort by weigth", "tatal ${data.size}")
             }
+            data
         } else {
-            pokemonSearchData.update {
-                it.copy(data = listOf())
+            homeButtonListTitle.update {
+                listOf("sort by name", "sort by weigth", "tatal ${pokemonState.size}")
             }
-            errorDialog.update {
-                it.copy(showError = true, errorText = "Not Found")
+            pokemonState
+        }
+    }
+
+    fun searchPokemonName(name: String) {
+        viewModelScope.launch {
+            _pokemonSearchState.update { name }
+            if (name.isEmpty()) {
+                pokemonDatabase.update { listOf() }
+                return@launch
+            }
+            _pokemonSearchState.debounce(1000).collectLatest {
+                pokemonSearchData.update {
+                    databaseInstance.searchPokemonByName(name).map { p -> p.pokemon }
+                }
             }
         }
     }
 
-    private suspend fun getPokeId(url: String, onSuccess: (Boolean) -> Unit) {
+    private suspend fun getPokemonById(url: String, onSuccess: (Boolean) -> Unit) {
         instance.pokemonByUrl(url).collectLatest { res ->
             when (res) {
                 is ApiSuccess -> {
-                    pokeIdList.update {
-                        it.copy(data = (it.data + res.data).onEach { c ->
-                            c?.color = randomColor
-                        }.filter { f -> f?.name != null })
+                    pokemonListState.update {
+                        it.plus(res.data.apply {
+                            this.color = randomColor
+                        }).filter { f ->
+                            f.name.isNotEmpty()
+                        }
                     }
+                    databaseInstance.insert(AppDatabaseEntity(pokemon = res.data))
                     onSuccess(true)
                 }
 
@@ -166,20 +186,17 @@ class PokemonViewModel @Inject constructor(
         }
     }
 
-    @Composable
-    fun getPokemonDataState(): List<PokemonIdModel?> {
-        val pokeState by pokeIdList.collectAsState()
-        val data = pokeDatabase ?: listOf()
-        val ret = if (data.size < pokeState.data.size) {
-            pokeState.data.sortedBy {
-                it?.name
-            }
-        } else {
-            data.sortedBy {
-                it?.name
-            }
+    fun deleteDatabaseByRange(startId: Int, lastId: Int) {
+        viewModelScope.launch {
+            databaseInstance.delete(firstId = startId, lastId = lastId)
+            pokemonDatabase.update { databaseInstance.getAll() }
         }
-        return ret
+    }
+
+    fun limtDatabase(limit: String) {
+        viewModelScope.launch {
+            pokemonDatabase.update { databaseInstance.getDatabaseLimit(limit.toInt()) }
+        }
     }
 
     fun startService() {
@@ -205,20 +222,13 @@ class PokemonViewModel @Inject constructor(
     fun sortPoke(i: Int) {
         when (i) {
             0 -> {
-                Toast.makeText(instance.getContext(), "Under Develop", Toast.LENGTH_SHORT).show()
+                pokemonDatabase.update { databaseInstance.sortPokemonByName() }
             }
 
             1 -> {
-                Toast.makeText(instance.getContext(), "Under Develop", Toast.LENGTH_SHORT).show()
+                pokemonDatabase.update { databaseInstance.sortPokemonByWeight() }
             }
 
-            2 -> {
-                Toast.makeText(instance.getContext(), "Under Develop", Toast.LENGTH_SHORT).show()
-            }
-
-            3 -> {
-                Toast.makeText(instance.getContext(), "Under Develop", Toast.LENGTH_SHORT).show()
-            }
         }
     }
 }

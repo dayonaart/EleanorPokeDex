@@ -2,29 +2,30 @@ package id.dayona.eleanorpokemondatabase.data.repository
 
 import androidx.room.Dao
 import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 import id.dayona.eleanorpokemondatabase.data.database.entity.AppDatabaseEntity
 
 @Dao
 interface DatabaseRepositoryDao {
     @Query("SELECT * FROM app_database")
-    fun getAll(): AppDatabaseEntity?
+    fun getAll(): List<AppDatabaseEntity>
 
-    @Query("SELECT * FROM app_database WHERE id IN (:id)")
-    fun loadByIds(id: Int): AppDatabaseEntity?
+    @Query("SELECT * FROM app_database ORDER BY name ASC ")
+    fun sortPokemonByName(): List<AppDatabaseEntity>
 
-    //
-//    @Query("SELECT * FROM appdatabaseentity WHERE data LIKE :name LIKE :name LIMIT 1")
-//    fun findByName(name: String): AppDatabaseEntity?
+    @Query("SELECT * FROM app_database ORDER BY weight DESC ")
+    fun sortPokemonByWeight(): List<AppDatabaseEntity>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(data: AppDatabaseEntity?)
+    @Upsert
+    fun insert(data: AppDatabaseEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun update(data: AppDatabaseEntity?)
+    @Query("SELECT * FROM app_database WHERE name LIKE :name || '%'")
+    fun searchPokemonByName(name: String): List<AppDatabaseEntity>
 
-    @Delete
-    fun delete(appDatabaseEntity: AppDatabaseEntity?)
+    @Query("DELETE FROM app_database WHERE id BETWEEN :firstId AND :lastId")
+    fun delete(firstId:Int,lastId:Int)
+
+    @Query("SELECT * FROM app_database LIMIT :limit")
+    fun getDatabaseLimit(limit:Int):List<AppDatabaseEntity>
 }

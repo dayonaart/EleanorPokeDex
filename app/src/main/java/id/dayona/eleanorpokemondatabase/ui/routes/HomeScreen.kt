@@ -19,6 +19,8 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,12 +37,10 @@ interface HomeScreen : LoadingDialog, DetailPokemonScreen {
     val navController: NavHostController
     override val pokemonViewModel: PokemonViewModel
 
-    val buttonListTitle: List<String>
-        get() = listOf("by name", "by species", "increase", "decrease")
-
     @Composable
     fun Home() {
-        val data = pokemonViewModel.getPokemonDataState()
+        val data = pokemonViewModel.getPokemonData()
+        val buttonListState by pokemonViewModel.homeButtonListTitle.collectAsState()
         Column {
             LazyHorizontalGrid(
                 contentPadding = PaddingValues(10.dp),
@@ -48,14 +48,17 @@ interface HomeScreen : LoadingDialog, DetailPokemonScreen {
                 rows = GridCells.Fixed(1),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 content = {
-                    items(4) { i ->
+                    items(buttonListState.size) { i ->
                         Button(
                             shape = RoundedCornerShape(30),
                             colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
                             onClick = {
                                 pokemonViewModel.sortPoke(i)
                             }) {
-                            Text(text = buttonListTitle[i], color = Color.Black)
+                            Text(
+                                text = buttonListState[i],
+                                color = Color.Black
+                            )
                         }
                     }
                 })
@@ -64,14 +67,15 @@ interface HomeScreen : LoadingDialog, DetailPokemonScreen {
                 userScrollEnabled = true,
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(count = data.filter { it?.name != null }.size) { i ->
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+
+                ) {
+                items(count = data.size) { i ->
                     Box(
                         modifier = Modifier
                             .background(
                                 shape = RoundedCornerShape(20),
-                                color = data[i]?.color ?: Color.White
+                                color = Color(data[i].color)
                             )
                             .border(
                                 width = 1.dp,
@@ -83,7 +87,7 @@ interface HomeScreen : LoadingDialog, DetailPokemonScreen {
                         Column(
                             modifier = Modifier
                                 .clickable {
-                                    navController.navigate(ScreenRoute.DetailPokemon.route + "/$i")
+                                    navController.navigate(ScreenRoute.DetailPokemon.route + "/${data[i].pokemonId}")
                                 }
                                 .padding(horizontal = 5.dp, vertical = 10.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -91,7 +95,7 @@ interface HomeScreen : LoadingDialog, DetailPokemonScreen {
                         ) {
                             Box {
                                 AsyncImage(
-                                    model = data[i]?.sprites?.other?.officialArtwork?.frontDefault,
+                                    model = data[i].sprites.other.officialArtwork.frontDefault,
                                     contentDescription = "Pokemon"
                                 )
                                 Spacer(modifier = Modifier.height(5.dp))
@@ -123,7 +127,7 @@ interface HomeScreen : LoadingDialog, DetailPokemonScreen {
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
-                                    text = "${data[i]?.name}",
+                                    text = data[i].name,
                                     textAlign = TextAlign.Center,
                                     color = Color.Black,
                                     fontWeight = FontWeight.Bold

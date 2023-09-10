@@ -10,11 +10,11 @@ import id.dayona.eleanorpokemondatabase.data.ApiLoading
 import id.dayona.eleanorpokemondatabase.data.ApiResult
 import id.dayona.eleanorpokemondatabase.data.ApiSuccess
 import id.dayona.eleanorpokemondatabase.data.NORMAL_TAG
-import id.dayona.eleanorpokemondatabase.data.model.PokeListModel
-import id.dayona.eleanorpokemondatabase.data.model.PokemonIdModel
 import id.dayona.eleanorpokemondatabase.data.remote.Api
 import id.dayona.eleanorpokemondatabase.data.repository.DeviceRepository
 import id.dayona.eleanorpokemondatabase.data.repository.Repository
+import id.dayona.eleanorpokemondatabase.data.state.PokemonInitState
+import id.dayona.eleanorpokemondatabase.data.state.PokemonState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -33,11 +33,11 @@ class RepoImpl @Inject constructor(
         Log.d(NORMAL_TAG, "HELLO ${deviceRepository.getAllProperties()}")
     }
 
-    override suspend fun pokeList(limit: Int, offset: Int): Flow<ApiResult<PokeListModel>> {
+    override suspend fun initPokeList(limit: Int, offset: Int): Flow<ApiResult<PokemonInitState>> {
         return flow {
             emit(ApiLoading(message = "Loading"))
             try {
-                val res = api.pokeList(limit = "$limit", offset = "$offset")
+                val res = api.initPokeList(limit = "$limit", offset = "$offset")
                 Log.d(API_TAG, "${res.raw().request.url}")
                 if (res.isSuccessful) {
                     emit(ApiSuccess(data = res.body()!!))
@@ -56,7 +56,7 @@ class RepoImpl @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    override suspend fun pokemonByUrl(url: String): Flow<ApiResult<PokemonIdModel>> {
+    override suspend fun pokemonByUrl(url: String): Flow<ApiResult<PokemonState>> {
         return flow {
             emit(ApiLoading(message = "Loading"))
             try {
@@ -77,7 +77,7 @@ class RepoImpl @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    override suspend fun searchPokemon(name: String): Flow<ApiResult<PokemonIdModel>> {
+    override suspend fun searchPokemon(name: String): Flow<ApiResult<PokemonState>> {
         return flow {
             emit(ApiLoading(message = "Loading"))
             try {

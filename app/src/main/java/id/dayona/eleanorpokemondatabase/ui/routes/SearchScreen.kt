@@ -17,15 +17,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,45 +42,39 @@ interface SearchScreen {
     @Composable
     fun Search() {
         val focusManager = LocalFocusManager.current
-        var textController by remember {
-            mutableStateOf("")
-        }
         val data by pokemonViewModel.pokemonSearchData.collectAsState()
+        val searchController by pokemonViewModel.pokemonSearchController.collectAsState()
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 10.dp, vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            TextField(value = textController,
+            TextField(
+                value = searchController,
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .padding(vertical = 10.dp)
+                    .fillMaxWidth()
+                    .border(width = 0.dp, color = Color.Transparent),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = {
                     focusManager.clearFocus()
-                    pokemonViewModel.searchPokeName(textController)
                 }),
-                onValueChange = {
-                    textController = it
-                })
-            Button(modifier = Modifier.align(Alignment.End), onClick = {
-                focusManager.clearFocus()
-                pokemonViewModel.searchPokeName(textController)
-            }) {
-                Text(text = "search")
-            }
+                onValueChange = pokemonViewModel::searchPokemonName,
+                shape = RoundedCornerShape(40),
+            )
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 userScrollEnabled = true,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(count = data.data.filter { it?.name != null }.size) { i ->
+                items(count = data.filter { it.name.isNotEmpty() }.size) { i ->
                     Box(
                         modifier = Modifier
                             .background(
                                 shape = RoundedCornerShape(20),
-                                color = data.data[i]?.color ?: Color.White
+                                color = Color(data[i].color)
                             )
                             .border(
                                 width = 1.dp,
@@ -97,7 +86,7 @@ interface SearchScreen {
                         Column(
                             modifier = Modifier
                                 .clickable {
-                                    navController.navigate(ScreenRoute.DetailPokemon.route + "/$i")
+                                    navController.navigate(ScreenRoute.DetailPokemon.route + "/${data[i].pokemonId}")
                                 }
                                 .padding(horizontal = 5.dp, vertical = 10.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -105,7 +94,7 @@ interface SearchScreen {
                         ) {
                             Box {
                                 AsyncImage(
-                                    model = data.data[i]?.sprites?.other?.officialArtwork?.frontDefault,
+                                    model = data[i].sprites.other.officialArtwork.frontDefault,
                                     contentDescription = "Pokemon"
                                 )
                                 Spacer(modifier = Modifier.height(5.dp))
@@ -137,7 +126,7 @@ interface SearchScreen {
                                 contentAlignment = Alignment.Center,
                             ) {
                                 androidx.compose.material3.Text(
-                                    text = "${data.data[i]?.name}",
+                                    text = data[i].name,
                                     textAlign = TextAlign.Center,
                                     color = Color.Black,
                                     fontWeight = FontWeight.Bold

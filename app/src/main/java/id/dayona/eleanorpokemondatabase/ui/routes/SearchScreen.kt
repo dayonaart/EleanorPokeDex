@@ -17,7 +17,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.TextField
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -50,7 +51,7 @@ interface SearchScreen {
                 .padding(horizontal = 10.dp, vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            TextField(
+            OutlinedTextField(
                 value = searchController,
                 modifier = Modifier
                     .padding(vertical = 10.dp)
@@ -62,6 +63,7 @@ interface SearchScreen {
                 }),
                 onValueChange = pokemonViewModel::searchPokemonName,
                 shape = RoundedCornerShape(40),
+                label = { Text(text = "Search Pokemon Name") }
             )
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),

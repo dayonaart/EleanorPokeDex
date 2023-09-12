@@ -37,7 +37,7 @@ class PokemonViewModel @Inject constructor(
     repository: Lazy<Repository>,
     databaseRepositoryDao: Lazy<DatabaseRepositoryDao>
 ) : ViewModel() {
-    private val instance = repository.get()
+    val instance = repository.get()
     private val databaseInstance = databaseRepositoryDao.get()
     private val pokemonDatabase = MutableStateFlow(listOf<AppDatabaseEntity>())
     private val pokemonListState = MutableStateFlow(listOf(PokemonState()))
@@ -53,9 +53,6 @@ class PokemonViewModel @Inject constructor(
     private val colorList: List<Long>
         get() = listOf(
             0xFF000000,
-            0xFF444444,
-            0xFF888888,
-            0xFFCCCCCC,
             0xFFFFFFFF,
             0xFFFF0000,
             0xFF00FF00,
@@ -121,12 +118,12 @@ class PokemonViewModel @Inject constructor(
         return if (pokemonDatabase.map { it.pokemon.name.isNotEmpty() }.contains(true)) {
             val data = pokemonDatabase.map { it.pokemon }
             homeButtonListTitle.update {
-                listOf("sort by name", "sort by weigth", "tatal ${data.size}")
+                listOf("sort by name", "sort by weigth", "total ${data.size}")
             }
             data
         } else {
             homeButtonListTitle.update {
-                listOf("sort by name", "sort by weigth", "tatal ${pokemonState.size}")
+                listOf("sort by name", "sort by weigth", "total ${pokemonState.size}")
             }
             pokemonState
         }

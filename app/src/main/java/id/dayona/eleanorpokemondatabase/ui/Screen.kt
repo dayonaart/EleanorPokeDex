@@ -9,6 +9,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.navigation.NavHostController
@@ -46,7 +47,9 @@ class Screen : BottomNav, HomeScreen, SearchScreen, FeedScreen, ProfileScreen {
         NavHost(
             navController = navController,
             startDestination = ScreenRoute.HomeScreen.route,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(horizontal = 10.dp)
         ) {
             composable(ScreenRoute.HomeScreen.route) {
                 Home()
